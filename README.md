@@ -77,7 +77,7 @@ npx playwright install
 Antes de executar os testes, crie um arquivo `.env` na raiz do projeto com as informações de acesso:
 
 ```env
-BASE_URL=https://exemplo.com/login
+BASE_URL=https://
 EMAIL=seu_email
 PASSWORD=sua_senha
 ```
