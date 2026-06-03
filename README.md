@@ -4,11 +4,11 @@ Este projeto contém uma automação E2E desenvolvida com Playwright para valida
 
 O teste realiza:
 
-* 🔐 Login na aplicação;
-* 👥 Acesso à tela de Usuários;
-* ✅ Validação da listagem de usuários;
-* 🏢 Acesso à tela de Departamentos;
-* ✅ Validação da listagem de departamentos.
+* 🔐 Login na aplicação
+* 👥 Acesso à tela de Usuários
+* ✅ Validação da listagem de usuários
+* 🏢 Acesso à tela de Departamentos
+* ✅ Validação da listagem de departamentos
 
 ## 🛠️ Tecnologias utilizadas
 
@@ -112,10 +112,10 @@ O teste realiza o login com um usuário válido e verifica se é possível acess
 
 Foi utilizado o padrão **Page Object Model (POM)**, separando as ações da interface da lógica dos testes para facilitar:
 
-* ♻️ Reutilização de código;
-* 🔧 Manutenção dos testes;
-* 📖 Melhor legibilidade;
-* 📈 Escalabilidade do projeto.
+* ♻️ Reutilização de código
+* 🔧 Manutenção dos testes
+* 📖 Melhor legibilidade
+* 📈 Escalabilidade do projeto
 
 ## 👨‍💻 Autor
 
