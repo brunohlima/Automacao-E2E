@@ -1,6 +1,6 @@
-📋 Sobre o projeto
+## 📋 Sobre o projeto
 
-Este projeto contém uma automação E2E desenvolvida com Playwright para validar um fluxo básico da plataforma Digisac.
+### Este projeto contém uma automação E2E desenvolvida com Playwright para validar um fluxo básico da plataforma Digisac.
 
 O teste realiza:
 
