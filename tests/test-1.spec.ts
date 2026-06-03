@@ -9,7 +9,6 @@ test('Smoke Test - Deve logar e validar as telas de Usuários e Departamentos', 
   await page.getByTestId('login-button-submit').click();
 
   // 2. Ação: Navegar até a tela de Usuários
-  // Usamos o ícone do menu (grid)
   await page.locator('.lucide.lucide-layout-grid').click(); 
   await page.getByTestId('menu-button-users').click();
 
