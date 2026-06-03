@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { test, expect } = require('@playwright/test');
 
 const { LoginPage, NavigationMenu } = require('../../pages/loginPage');
@@ -7,7 +9,7 @@ test('Smoke Test - Deve validar o acesso às telas de Usuários e Departamentos'
   const navMenu = new NavigationMenu(page);
 
   await loginPage.acessar();
-  await loginPage.realizarLogin('usuario@exemplo.com', 'SenhaExemplo123');
+  await loginPage.realizarLogin(process.env.EMAIL, process.env.PASSWORD);
 
   await navMenu.irParaUsuarios();
   await expect(page.getByTestId('users-list-heading')).toBeVisible();

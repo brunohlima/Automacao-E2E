@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 class LoginPage {
   constructor(page) {
     this.page = page;
@@ -7,7 +9,7 @@ class LoginPage {
   }
 
   async acessar() {
-    await this.page.goto('https://exemplo.com/login');
+    await this.page.goto(process.env.BASE_URL);
   }
 
   async realizarLogin(email, senha) {
