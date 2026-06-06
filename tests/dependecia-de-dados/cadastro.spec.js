@@ -1,51 +1,33 @@
-import { test, expect } from '@playwright/test';
+require('dotenv').config(); // Carrega as variáveis do arquivo .env
 
-test('Nível 2 - Dependência de Dados: Criar Departamento e Usuário Vinculado', async ({ page }) => {
-  // Gera um número aleatório simples entre 1 e 99
+const { test } = require('@playwright/test');
+const { CadastroPage } = require('../../pages/cadastroPage'); // Importa a nossa Page Object
+
+test('Nível 2 - Criar Departamento e Usuário Vinculado', async ({ page }) => {
+  const cadastroPage = new CadastroPage(page); // Cria a instância da Page
+
+  // Geradores Dinâmicos para o sitema não barrar e-mail e departamentos com nomes iguais
   const numeroAleatorio = Math.floor(Math.random() * 99) + 1;
-  
-  // Dados dinâmicos e limpos
-  const nomeDinamicoDepartamento = `quality assurance ${numeroAleatorio}`;
-  const nomeDinamicoUsuario = `Bruno Lima ${numeroAleatorio}`;
-  const emailDinamicoUsuario = `test${numeroAleatorio}@automation.com`;
+  const nomeDepartamento = `quality assurance ${numeroAleatorio}`;
+  const emailUsuario = `test${numeroAleatorio}@automation.com`;
 
-  // 1. Ação: Acessar a plataforma e fazer login
-  await page.goto('https://exemplo.com/login');
-  
-  await page.getByTestId('login-input-email').fill('usuario@exemplo.com');
-  await page.getByTestId('login-input-password').fill('SenhaExemplo123');
+  // Passo 1: Login usando os dados seguros do arquivo .env
+  await page.goto(process.env.BASE_URL);
+  await page.getByTestId('login-input-email').fill(process.env.EMAIL);
+  await page.getByTestId('login-input-password').fill(process.env.PASSWORD);
   await page.getByTestId('login-button-submit').click();
 
-  // 2. Ação: Navegar até a tela de Departamentos e criar um novo
-  await page.locator('.lucide.lucide-layout-grid').click();
-  await page.getByText('Departamentos').click();
-  await page.getByTestId('departments-list-button-add').click();
-  
-  await page.getByTestId('departments-form-input-name').fill(nomeDinamicoDepartamento);
-  await page.getByTestId('departments-form-button-confirm').click();
+  // Passo 2: Executa o método da Page Object para criar o departamento único
+  await cadastroPage.criarDepartamento(nomeDepartamento);
 
-  // 3. Ação: Navegar até a tela de Usuários e abrir o formulário de cadastro
-  await page.locator('.lucide.lucide-layout-grid').click();
-  await page.getByTestId('menu-button-users').getByText('Usuários').click();
-  await page.getByTestId('users-list-button-add').click();
+  // Passo 3: Executa o método para criar o usuário (Passando o nome fixo 'Bruno Lima' direto aqui)
+  await cadastroPage.criarUsuarioComDepartamento(
+    'Bruno Lima', // Nome do usuário fixo
+    emailUsuario, // E-mail dinâmico único
+    process.env.USER_PASSWORD_NIVEL2, // Senha vinda do .env
+    nomeDepartamento // Nome do departamento dinâmico para fazer o vínculo
+  );
 
-  // 4. Ação: Preencher os dados gerais do usuário e selecionar o perfil
-  await page.getByTestId('users-form-input-name').fill(nomeDinamicoUsuario);
-  await page.getByTestId('users-form-input-email').fill(emailDinamicoUsuario);
-  
-  // Seleciona o perfil de 'Administrador' no primeiro dropdown
-  await page.locator('.p-0.css-n9qnu9').first().click();
-  await page.getByText('Administrador').click();
-
-  // 5. Ação: Vincular o usuário ao Departamento dinâmico criado no passo anterior
-  await page.locator('.gap-1.css-14oxtc6 > .p-0').first().click();
-  await page.getByText(nomeDinamicoDepartamento).click();
-
-  // 6. Ação: Preencher as senhas e salvar o usuário
-  await page.getByTestId('users-form-input-password').fill('Exemplo@Qa2026');
-  await page.getByTestId('users-form-input-passwordConfirmation').fill('Exemplo@Qa2026');
-  await page.getByTestId('users-form-button-save').click();
-
-  // Validação: Garantir que o usuário dinâmico criado aparece listado na tela
-  await expect(page.getByRole('cell', { name: nomeDinamicoUsuario }).first()).toBeVisible();
+  // Passo 4: Executa a validação buscando o nome fixo na tabela
+  await cadastroPage.validarUsuarioCriado('Bruno Lima');
 });
