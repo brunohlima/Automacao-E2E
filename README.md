@@ -1,139 +1,131 @@
-## 📋 Sobre o projeto
+📋 Sobre o projeto
 
-Este projeto contém uma automação E2E desenvolvida com Playwright para validar um fluxo básico da plataforma Digisac.
+Este projeto contém uma automação E2E desenvolvida com Playwright para validar fluxos da plataforma Digisac, estruturada progressivamente em 4 níveis de complexidade.
 
-O teste realiza:
+Os testes realizam:
+🔐 Nível 1: Smoke Test (Acesso rápido e validação de telas)
+📦 Nível 2: Dependência de Dados (Cenários de pré-requisitos e cadastros isolados)
+🧬 Nível 3: Ciclo de Vida CRUD (Criação, leitura, atualização e exclusão)
+🚀 Nível 4: Jornada do Cliente (Fluxo completo ponta a ponta integrado)
 
-* 🔐 Login na aplicação
-* 👥 Acesso à tela de Usuários
-* ✅ Validação da listagem de usuários
-* 🏢 Acesso à tela de Departamentos
-* ✅ Validação da listagem de departamentos
-
-## 🛠️ Tecnologias utilizadas
+🛠️ Tecnologias utilizadas
 
 * JavaScript
 * Node.js
 * Playwright
 
-## 📁 Estrutura do projeto
+📁 Estrutura do projeto
 
-```text
 Automacao-E2E-Digisac/
 ├── pages/
 │   └── loginPage.js
 ├── tests/
-│   └── smoke-test/
-│       └── login.spec.js
+│   ├── smoke-test/
+│   │   └── login.spec.js
+│   ├── dependencia-de-dados/
+│   │   └── cadastro.spec.js
+│   ├── ciclo-de-vida-crud/
+│   │   └── crud.spec.js
+│   └── jornada-do-cliente/
+│       └── jornada.spec.js
+├── .env
 ├── .env.example
 ├── .gitignore
 ├── package-lock.json
 ├── package.json
 └── README.md
-```
 
-## 📌 Pré-requisitos
+📌 Pré-requisitos
 
 Para executar o projeto é necessário ter instalado:
-
 * Node.js
 * NPM
 
 Para verificar as versões:
-
 ```bash
 node -v
 npm -v
-```
-
-## ⚙️ Instalação
+⚙️ Instalação
 
 Clone o repositório:
 
-```bash
-git clone https://github.com/brunohlima/Automacao-E2E-Digisac
-```
-
+Bash
+git clone [https://github.com/brunohlima/Automacao-E2E-Digisac](https://github.com/brunohlima/Automacao-E2E-Digisac)
 Acesse a pasta do projeto:
 
-```bash
+Bash
 cd Automacao-E2E-Digisac
-```
-
 Instale as dependências:
 
-```bash
+Bash
 npm install
-```
-
 Instale os navegadores utilizados pelo Playwright:
 
-```bash
+Bash
 npx playwright install
-```
+🔒 Configuração das variáveis de ambiente
 
-## 🔒 Configuração das variáveis de ambiente
+Antes de executar os testes, crie um arquivo .env na raiz do projeto seguindo o modelo abaixo:
 
-Antes de executar os testes, crie um arquivo `.env` na raiz do projeto com as informações de acesso:
-
-```env
-BASE_URL=https://
-EMAIL=seu_email
+Snippet de código
+BASE_URL=[https://exemplo.com/login](https://exemplo.com/login)
+EMAIL=seu_email@app.com
 PASSWORD=sua_senha
-```
+USER_PASSWORD_NIVEL2=sua_senha_nivel2
+O projeto utiliza variáveis de ambiente para evitar que credenciais fiquem expostas diretamente no código-fonte. Também é disponibilizado um arquivo .env.example como referência.
 
-O projeto utiliza variáveis de ambiente para evitar que credenciais fiquem expostas diretamente no código-fonte.
+▶️ Executando os testes
 
-Também é disponibilizado um arquivo `.env.example` como referência para configuração do ambiente.
+Executar todos os testes da suite:
 
-## ▶️ Executando os testes
-
-Executar todos os testes:
-
-```bash
+Bash
 npx playwright test
-```
+Executar apenas o Smoke Test (Nível 1):
 
-Executar o teste implementado:
-
-```bash
+Bash
 npx playwright test tests/smoke-test/login.spec.js
-```
+Executar apenas a Jornada do Cliente (Nível 4):
 
-Executar com navegador aberto:
+Bash
+npx playwright test tests/jornada-do-cliente/jornada.spec.js
+Executar com navegador aberto (Modo Headed):
 
-```bash
+Bash
 npx playwright test --headed
-```
+Abrir a interface visual do Playwright (Modo UI):
 
-Abrir a interface do Playwright:
-
-```bash
+Bash
 npx playwright test --ui
-```
+🧪 Cenários validados por Nível
 
-## 🧪 Cenário validado
+1. Smoke Test
+Valida o login e o carregamento básico das listagens de Usuários e Departamentos após a autenticação.
 
-O teste realiza o login com um usuário válido e verifica se é possível acessar corretamente as telas de **Usuários** e **Departamentos**, validando o carregamento de ambas após a autenticação.
+2. Dependência de Dados
+Valida os fluxos de criação e persistência de dados que servem como pré-requisitos para outros módulos.
 
-### Fluxo executado
+3. Ciclo de Vida CRUD
+Testa o fluxo completo de manipulação de dados (Criação, Leitura, Atualização e Exclusão) de uma entidade.
 
-1. 🔐 Acessa a página de login
-2. ✍️ Realiza a autenticação
-3. 👥 Navega até a tela de Usuários
-4. ✅ Valida a exibição da listagem de usuários
-5. 🏢 Navega até a tela de Departamentos
-6. ✅ Valida a exibição da listagem de departamentos
+4. Jornada do Cliente E2E
+Simula a experiência real e contínua de um operador utilizando as principais funções da plataforma:
 
-## 🏗️ Padrão utilizado
+🔐 Realiza o login utilizando credenciais seguras do ambiente.
 
-Foi utilizado o padrão **Page Object Model (POM)**, separando as ações da interface da lógica dos testes para facilitar:
+📶 Cria e configura uma nova conexão de serviço (SMS) vinculando-a a um departamento.
 
-* ♻️ Reutilização de código
-* 🔧 Manutenção dos testes
-* 📖 Melhor legibilidade
-* 📈 Escalabilidade do projeto
+👥 Navega até a aba de contatos e realiza o cadastro completo de um novo cliente.
 
-## 👨‍💻 Autor
+💬 Abre o chat do contato gerado, limpa tickets anteriores e simula transferências internas de workflow.
 
-**Bruno Lima**
+✍️ Digita uma mensagem no campo de texto e faz o disparo utilizando o evento nativo de teclado (Enter).
+
+🏁 Conclui com sucesso o encerramento definitivo do ticket de atendimento.
+
+🏗️ Padrão utilizado
+
+O projeto utiliza o padrão Page Object Model (POM) nas suites estruturadas, separando as ações e mapeamentos da interface da lógica direta dos testes. Isso facilita a reutilização de código, a manutenção ágil dos seletores e eleva a legibilidade dos cenários automatizados.
+
+👨‍💻 Autor
+
+Bruno Lima
