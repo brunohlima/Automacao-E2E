@@ -12,8 +12,8 @@ test('Login, Criar Conexão SMS, Contato e mandar mensagem no chat', async ({ pa
   await jornadaPage.criarConexaoSms('teste');
 
   // 3. Cadastro de contato
-  await jornadaPage.cadastrarContato('teste', '5511900000000');
-
+  await jornadaPage.cadastrarContato('teste', process.env.TEST_PHONE || '5511900000000');
+  
   // 4. Transferência do chamado no chat
   await jornadaPage.transferirChamadoNoChat();
 
