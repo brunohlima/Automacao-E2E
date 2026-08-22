@@ -1,38 +1,50 @@
-## 📋 Sobre o projeto
+# 📋 Sobre o projeto
 
-Este projeto contém uma automação E2E desenvolvida com Playwright para validar um fluxo básico da plataforma Digisac.
+Este projeto é a entrega do **Desafio Prático de Automação E2E**, desenvolvido com **Playwright**, simulando fluxos reais de um usuário na plataforma **Digisac**.
 
-O teste realiza:
+O desafio é dividido em 4 níveis de complexidade, cada um automatizado em sua própria branch, indo do básico (smoke test) até uma jornada completa de atendimento ao cliente.
 
-* 🔐 Login na aplicação
-* 👥 Acesso à tela de Usuários
-* ✅ Validação da listagem de usuários
-* 🏢 Acesso à tela de Departamentos
-* ✅ Validação da listagem de departamentos
+---
 
-## 🛠️ Tecnologias utilizadas
+# 🛠️ Tecnologias utilizadas
 
 * JavaScript
 * Node.js
 * Playwright
+* Page Object Model (POM)
 
-## 📁 Estrutura do projeto
+---
 
-```text
+# 📁 Estrutura do projeto
+
+```bash
 Automacao-E2E-Digisac/
 ├── pages/
+│   ├── cadastroPage.js
+│   ├── crudPage.js
+│   ├── jornadaPage.js
 │   └── loginPage.js
 ├── tests/
-│   └── smoke-test/
-│       └── login.spec.js
+│   ├── smoke-test/
+│   │   └── login.spec.js
+│   ├── dependencia-de-dados/
+│   │   └── cadastro.spec.js
+│   ├── ciclo-de-vida-crud/
+│   │   └── crud.spec.js
+│   └── jornada-do-cliente/
+│       └── jornada.spec.js
 ├── .env.example
 ├── .gitignore
+├── LICENSE
 ├── package-lock.json
 ├── package.json
+├── playwright.config.js
 └── README.md
 ```
 
-## 📌 Pré-requisitos
+---
+
+# 📌 Pré-requisitos
 
 Para executar o projeto é necessário ter instalado:
 
@@ -46,33 +58,37 @@ node -v
 npm -v
 ```
 
-## ⚙️ Instalação
+---
 
-Clone o repositório:
+# ⚙️ Instalação
+
+## Clone o repositório
 
 ```bash
 git clone https://github.com/brunohlima/Automacao-E2E-Digisac
 ```
 
-Acesse a pasta do projeto:
+## Acesse a pasta do projeto
 
 ```bash
 cd Automacao-E2E-Digisac
 ```
 
-Instale as dependências:
+## Instale as dependências
 
 ```bash
 npm install
 ```
 
-Instale os navegadores utilizados pelo Playwright:
+## Instale os navegadores utilizados pelo Playwright
 
 ```bash
 npx playwright install
 ```
 
-## 🔒 Configuração das variáveis de ambiente
+---
+
+# 🔒 Configuração das variáveis de ambiente
 
 Antes de executar os testes, crie um arquivo `.env` na raiz do projeto com as informações de acesso:
 
@@ -80,52 +96,81 @@ Antes de executar os testes, crie um arquivo `.env` na raiz do projeto com as in
 BASE_URL=https://
 EMAIL=seu_email
 PASSWORD=sua_senha
+TEST_PHONE=numero_de_teste
 ```
 
-O projeto utiliza variáveis de ambiente para evitar que credenciais fiquem expostas diretamente no código-fonte.
+* `BASE_URL`: URL da plataforma de ambiente de QA.
+* `EMAIL` / `PASSWORD`: credenciais de acesso ao ambiente de QA.
+* `TEST_PHONE`: número utilizado no cadastro de contato no teste de jornada do cliente (evita expor números reais no código-fonte).
 
-Também é disponibilizado um arquivo `.env.example` como referência para configuração do ambiente.
+O projeto utiliza variáveis de ambiente para evitar que credenciais fiquem expostas diretamente no código-fonte. Um arquivo `.env.example` é disponibilizado como referência.
 
-## ▶️ Executando os testes
+---
 
-Executar todos os testes:
+# ▶️ Executando os testes
+
+## Executar todos os testes
 
 ```bash
 npx playwright test
 ```
 
-Executar o teste implementado:
+## Executar um nível específico
 
 ```bash
 npx playwright test tests/smoke-test/login.spec.js
+npx playwright test tests/dependecia-de-dados/cadastro.spec.js
+npx playwright test tests/ciclo-de-vida-crud/crud.spec.js
+npx playwright test tests/jornada-do-cliente/jornada.spec.js
 ```
 
-Executar com navegador aberto:
+## Executar com navegador aberto
 
 ```bash
 npx playwright test --headed
 ```
 
-Abrir a interface do Playwright:
+## Abrir a interface do Playwright
 
 ```bash
 npx playwright test --ui
 ```
 
-## 🧪 Cenário validado
+---
 
-O teste realiza o login com um usuário válido e verifica se é possível acessar corretamente as telas de **Usuários** e **Departamentos**, validando o carregamento de ambas após a autenticação.
+# 🧪 Níveis do desafio
 
-### Fluxo executado
+## 🟢 Nível 1 — Smoke Test
+Login na plataforma e navegação até as telas de CRUD de **Usuários** e **Departamentos**, validando que ambas carregam corretamente (elementos visuais, botões principais e grids).
 
-1. 🔐 Acessa a página de login
-2. ✍️ Realiza a autenticação
-3. 👥 Navega até a tela de Usuários
-4. ✅ Valida a exibição da listagem de usuários
-5. 🏢 Navega até a tela de Departamentos
-6. ✅ Valida a exibição da listagem de departamentos
+## 🟡 Nível 2 — Dependência de Dados
+Criação de um **Departamento**, seguida da criação de um **Usuário** vinculado obrigatoriamente a esse Departamento recém-criado.
 
-## 🏗️ Padrão utilizado
+## 🟠 Nível 3 — Ciclo de Vida CRUD
+Fluxo completo de uma **Conexão SMS**: criar, visualizar (validar na listagem), atualizar (editar um dado) e arquivar ao final.
+
+## 🔴 Nível 4 — Jornada do Cliente E2E
+Fluxo completo simulando o atendimento a um cliente:
+* Cadastro e validação de um Contato
+* Criação do contato focado em Conexão SMS
+* Abertura de um chamado
+* Transferência do chamado para a própria fila de atendimento
+* Envio de mensagem, validação do envio e fechamento do chamado
+
+---
+
+# 🌿 Estratégia de branches
+
+Cada nível foi desenvolvido em uma branch própria, com commits incrementais registrando o passo a passo da construção:
+
+* `feature/nivel-1`
+* `feature/nivel-2`
+* `feature/nivel-3`
+* `feature/nivel-4`
+
+---
+
+# 🏗️ Padrão utilizado
 
 Foi utilizado o padrão **Page Object Model (POM)**, separando as ações da interface da lógica dos testes para facilitar:
 
@@ -134,6 +179,20 @@ Foi utilizado o padrão **Page Object Model (POM)**, separando as ações da int
 * 📖 Melhor legibilidade
 * 📈 Escalabilidade do projeto
 
-## 👨‍💻 Autor
+---
+
+# ⚠️ Aviso
+
+Este é um projeto pessoal de estudo em automação de testes, criado em ambiente de QA com autorização. Não possui afiliação oficial com a Digisac.
+
+---
+
+# 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+# 👨‍💻 Autor
 
 **Bruno Lima**
