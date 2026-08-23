@@ -20,7 +20,7 @@ O desafio é dividido em 4 níveis de complexidade, cada um automatizado em sua 
 # 📁 Estrutura do projeto
 
 ```bash
-Automacao-E2E-Digisac/
+Automacao-E2E/
 ├── pages/
 │   ├── cadastroPage.js
 │   ├── crudPage.js
@@ -72,7 +72,7 @@ git clone https://github.com/brunohlima/Automacao-E2E-Digisac
 ## Acesse a pasta do projeto
 
 ```bash
-cd Automacao-E2E-Digisac
+cd Automacao-E2E-
 ```
 
 ## Instale as dependências
@@ -100,7 +100,7 @@ PASSWORD=sua_senha
 TEST_PHONE=numero_de_teste
 ```
 
-* `BASE_URL`: URL da plataforma Digisac utilizada no ambiente de QA.
+* `BASE_URL`: URL da plataforma utilizada no ambiente de QA.
 * `EMAIL` / `PASSWORD`: credenciais de acesso ao ambiente de QA.
 * `TEST_PHONE`: número utilizado no cadastro de contato no teste de jornada do cliente (evita expor números reais no código-fonte).
 
