@@ -4,6 +4,8 @@ Este projeto é a entrega do **Desafio Prático de Automação E2E**, desenvolvi
 
 O desafio é dividido em 4 níveis de complexidade, cada um automatizado em sua própria branch, indo do básico (smoke test) até uma jornada completa de atendimento ao cliente.
 
+> 📌 A branch `main` reflete o projeto completo (nível 4). As branches `feature/nivel-1` a `feature/nivel-4` foram mantidas como histórico da evolução incremental do desenvolvimento, com commits passo a passo.
+
 ---
 
 # 🛠️ Tecnologias utilizadas
@@ -35,7 +37,6 @@ Automacao-E2E-Digisac/
 │       └── jornada.spec.js
 ├── .env.example
 ├── .gitignore
-├── LICENSE
 ├── package-lock.json
 ├── package.json
 ├── playwright.config.js
@@ -99,7 +100,7 @@ PASSWORD=sua_senha
 TEST_PHONE=numero_de_teste
 ```
 
-* `BASE_URL`: URL da plataforma de ambiente de QA.
+* `BASE_URL`: URL da plataforma Digisac utilizada no ambiente de QA.
 * `EMAIL` / `PASSWORD`: credenciais de acesso ao ambiente de QA.
 * `TEST_PHONE`: número utilizado no cadastro de contato no teste de jornada do cliente (evita expor números reais no código-fonte).
 
@@ -119,7 +120,7 @@ npx playwright test
 
 ```bash
 npx playwright test tests/smoke-test/login.spec.js
-npx playwright test tests/dependecia-de-dados/cadastro.spec.js
+npx playwright test tests/dependencia-de-dados/cadastro.spec.js
 npx playwright test tests/ciclo-de-vida-crud/crud.spec.js
 npx playwright test tests/jornada-do-cliente/jornada.spec.js
 ```
@@ -183,13 +184,7 @@ Foi utilizado o padrão **Page Object Model (POM)**, separando as ações da int
 
 # ⚠️ Aviso
 
-Este é um projeto pessoal de estudo em automação de testes, criado em ambiente de QA com autorização. Não possui afiliação oficial com a Digisac.
-
----
-
-# 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este é um projeto pessoal de estudo em automação de testes, criado em ambiente de QA com autorização. Não possui afiliação oficial.
 
 ---
 
