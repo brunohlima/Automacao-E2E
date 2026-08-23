@@ -72,7 +72,7 @@ git clone https://github.com/brunohlima/Automacao-E2E-Digisac
 ## Acesse a pasta do projeto
 
 ```bash
-cd Automacao-E2E-
+cd Automacao-E2E
 ```
 
 ## Instale as dependências
