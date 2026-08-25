@@ -7,5 +7,3 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 .env
-# Enunciado do desafio: contem credenciais do ambiente de QA
-*Desafio*.md
