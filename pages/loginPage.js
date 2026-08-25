@@ -1,5 +1,9 @@
-require('dotenv').config();
+const { expect } = require('@playwright/test');
 
+/**
+ * Tela de login e ponto de entrada de todos os testes.
+ * Centralizar o login aqui evita que cada spec repita o mesmo fluxo.
+ */
 class LoginPage {
   constructor(page) {
     this.page = page;
@@ -9,7 +13,8 @@ class LoginPage {
   }
 
   async acessar() {
-    await this.page.goto(process.env.BASE_URL);
+    // baseURL vem do playwright.config.js, que le a BASE_URL do .env
+    await this.page.goto('/');
   }
 
   async realizarLogin(email, senha) {
@@ -17,10 +22,18 @@ class LoginPage {
     await this.passwordInput.fill(senha);
     await this.submitButton.click();
   }
+
+  /** Acessa a plataforma e autentica com as credenciais do .env. */
+  async acessarEAutenticar() {
+    await this.acessar();
+    await this.realizarLogin(process.env.EMAIL, process.env.PASSWORD);
+    await expect(this.submitButton).toBeHidden();
+  }
 }
 
 class NavigationMenu {
   constructor(page) {
+    this.page = page;
     this.menuGrid = page.locator('.lucide.lucide-layout-grid');
     this.usersOption = page.getByTestId('menu-button-users');
     this.departmentsOption = page.getByTestId('menu-button-departments');

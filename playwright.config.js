@@ -1,81 +1,65 @@
 // @ts-check
-import { defineConfig, devices } from '@playwright/test';
+const { defineConfig, devices } = require('@playwright/test');
+const path = require('path');
 
 /**
- * Read environment variables from file.
+ * Carrega as variaveis do arquivo .env uma unica vez, para todo o projeto.
+ * Assim nenhum spec ou page precisa chamar dotenv individualmente.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './tests',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+  /**
+   * Os testes criam dados reais em um ambiente de QA compartilhado
+   * (departamentos, usuarios, conexoes, contatos e chamados).
+   * Rodar em paralelo faz um teste enxergar o dado do outro, entao
+   * a execucao e sequencial de proposito.
+   */
+  fullyParallel: false,
+  workers: 1,
+
+  /* Falha o build no CI caso um test.only tenha ficado no codigo. */
+  forbidOnly: !!process.env.CI,
+
+  /* Retenta apenas no CI. */
+  retries: process.env.CI ? 2 : 0,
+
+  /* Reporters: HTML para analise local e lista para acompanhar a execucao. */
+  reporter: [['html', { open: 'never' }], ['list']],
+
+  use: {
+    /* Permite usar caminhos relativos em page.goto(). */
+    baseURL: process.env.BASE_URL,
+
+    /* Evidencias apenas quando algo falha, para nao inflar o report. */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
-  /* Configure projects for major browsers */
+  /**
+   * O desafio roda contra um ambiente de QA compartilhado, entao os testes
+   * executam apenas em Chromium para nao duplicar a massa de dados criada.
+   * Firefox e WebKit podem ser reativados abaixo quando houver ambiente isolado.
+   */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-
-    /* Test against mobile viewports. */
     // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
     // },
     // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
     // },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });
-
