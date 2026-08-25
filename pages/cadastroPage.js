@@ -73,6 +73,11 @@ class CadastroPage {
 
     await this.inputSenhaUsuario.fill(senhaUsuario);
     await this.inputConfirmarSenhaUsuario.fill(senhaUsuario);
+
+    // A plataforma so habilita o Salvar depois de validar a complexidade da senha.
+    // Checar aqui aponta o erro real (USER_PASSWORD_NIVEL2 fraca no .env) em vez de
+    // estourar o timeout tentando clicar num botao desabilitado.
+    await expect(this.botaoSalvarUsuario).toBeEnabled();
     await this.botaoSalvarUsuario.click();
 
     await expect(this.inputNomeUsuario).toBeHidden();

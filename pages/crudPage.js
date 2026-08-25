@@ -12,6 +12,7 @@ class CrudPage {
     this.menuConexoes = page.getByTestId('menu-button-connections');
     this.botaoAdicionarConexao = page.getByTestId('services-list-button-create');
     this.cardSms = page.getByTestId('services-create-card-sms');
+    this.avisoLimiteConexoes = page.getByRole('alertdialog', { name: 'Limite de conexões atingido' });
 
     // Formulario de cadastro/edicao
     this.inputNomeSms = page.getByTestId('sms-form-input-name');
@@ -38,6 +39,15 @@ class CrudPage {
   async criarConexaoSms(nomeConexao) {
     await this.botaoAdicionarConexao.click();
     await this.cardSms.click();
+
+    // A conta de QA tem um limite contratado de conexoes SMS. Quando ele estoura,
+    // a plataforma abre um alerta no lugar do formulario. Sem esta checagem o teste
+    // apenas estouraria o timeout esperando por um formulario que nunca abre.
+    await expect(
+      this.avisoLimiteConexoes,
+      'Limite de conexoes SMS atingido no ambiente de QA. Arquive ou remova conexoes existentes antes de rodar o teste.'
+    ).toBeHidden();
+
     await this.inputNomeSms.fill(nomeConexao);
     await this.dropdownDepartamento.click();
     await this.opcaoSuporte.click();
