@@ -1,33 +1,29 @@
-require('dotenv').config(); // Carrega as variáveis do arquivo .env
-
 const { test } = require('@playwright/test');
-const { CadastroPage } = require('../../pages/cadastroPage'); // Importa a nossa Page Object
+const { LoginPage } = require('../../pages/loginPage');
+const { CadastroPage } = require('../../pages/cadastroPage');
+const { gerarSufixoUnico } = require('../../support/dadosUnicos');
 
-test('Nível 2 - Criar Departamento e Usuário Vinculado', async ({ page }) => {
-  const cadastroPage = new CadastroPage(page); // Cria a instância da Page
+test('Nivel 2 - Criar Departamento e Usuario vinculado a ele', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  const cadastroPage = new CadastroPage(page);
 
-  // Geradores Dinâmicos para o sitema não barrar e-mail e departamentos com nomes iguais
-  const numeroAleatorio = Math.floor(Math.random() * 99) + 1;
-  const nomeDepartamento = `quality assurance ${numeroAleatorio}`;
-  const emailUsuario = `test${numeroAleatorio}@automation.com`;
+  // Massa dinamica: a plataforma nao aceita nome de departamento nem e-mail repetidos
+  const sufixo = gerarSufixoUnico();
+  const nomeDepartamento = `quality assurance ${sufixo}`;
+  const nomeUsuario = `usuario automacao ${sufixo}`;
+  const emailUsuario = `test${sufixo}@automation.com`;
 
-  // Passo 1: Login usando os dados seguros do arquivo .env
-  await page.goto(process.env.BASE_URL);
-  await page.getByTestId('login-input-email').fill(process.env.EMAIL);
-  await page.getByTestId('login-input-password').fill(process.env.PASSWORD);
-  await page.getByTestId('login-button-submit').click();
+  await loginPage.acessarEAutenticar();
 
-  // Passo 2: Executa o método da Page Object para criar o departamento único
+  // O usuario so pode ser criado depois que o departamento existe: a dependencia do nivel
   await cadastroPage.criarDepartamento(nomeDepartamento);
+  await cadastroPage.validarDepartamentoCriado(nomeDepartamento);
 
-  // Passo 3: Executa o método para criar o usuário (Passando o nome fixo 'Bruno Lima' direto aqui)
   await cadastroPage.criarUsuarioComDepartamento(
-    'Bruno Lima', // Nome do usuário fixo
-    emailUsuario, // E-mail dinâmico único
-    process.env.USER_PASSWORD_NIVEL2, // Senha vinda do .env
-    nomeDepartamento // Nome do departamento dinâmico para fazer o vínculo
+    nomeUsuario,
+    emailUsuario,
+    process.env.USER_PASSWORD_NIVEL2,
+    nomeDepartamento
   );
-
-  // Passo 4: Executa a validação buscando o nome fixo na tabela
-  await cadastroPage.validarUsuarioCriado('Bruno Lima');
+  await cadastroPage.validarUsuarioCriado(emailUsuario);
 });

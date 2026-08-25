@@ -14,18 +14,24 @@ O desafio é dividido em 4 níveis de complexidade, cada um automatizado em sua 
 * Node.js
 * Playwright
 * Page Object Model (POM)
+* GitHub Actions
 
 ---
 
 # 📁 Estrutura do projeto
 
 ```bash
-Automacao-E2E/
+Automacao-E2E-Digisac/
+├── .github/
+│   └── workflows/
+│       └── e2e.yml
 ├── pages/
 │   ├── cadastroPage.js
 │   ├── crudPage.js
 │   ├── jornadaPage.js
 │   └── loginPage.js
+├── support/
+│   └── dadosUnicos.js
 ├── tests/
 │   ├── smoke-test/
 │   │   └── login.spec.js
@@ -37,6 +43,7 @@ Automacao-E2E/
 │       └── jornada.spec.js
 ├── .env.example
 ├── .gitignore
+├── LICENSE
 ├── package-lock.json
 ├── package.json
 ├── playwright.config.js
@@ -72,7 +79,7 @@ git clone https://github.com/brunohlima/Automacao-E2E-Digisac
 ## Acesse a pasta do projeto
 
 ```bash
-cd Automacao-E2E
+cd Automacao-E2E-Digisac
 ```
 
 ## Instale as dependências
@@ -91,72 +98,79 @@ npx playwright install
 
 # 🔒 Configuração das variáveis de ambiente
 
-Antes de executar os testes, crie um arquivo `.env` na raiz do projeto com as informações de acesso:
+Antes de executar os testes, copie o arquivo `.env.example` para `.env` e preencha os valores:
 
-```env
-BASE_URL=https://
-EMAIL=seu_email
-PASSWORD=sua_senha
-TEST_PHONE=numero_de_teste
+```bash
+cp .env.example .env
 ```
 
-* `BASE_URL`: URL da plataforma utilizada no ambiente de QA.
-* `EMAIL` / `PASSWORD`: credenciais de acesso ao ambiente de QA.
-* `TEST_PHONE`: número utilizado no cadastro de contato no teste de jornada do cliente (evita expor números reais no código-fonte).
+| Variável | Utilizada em | Descrição |
+| --- | --- | --- |
+| `BASE_URL` | Todos os níveis | URL de login da plataforma no ambiente de QA. |
+| `EMAIL` | Todos os níveis | E-mail do usuário administrador usado no login. |
+| `PASSWORD` | Todos os níveis | Senha do usuário administrador usado no login. |
+| `USER_PASSWORD_NIVEL2` | Nível 2 | Senha atribuída ao usuário criado durante o teste. |
+| `TEST_PHONE` | Nível 4 | Número usado no cadastro do contato, evitando expor números reais no código. |
 
-O projeto utiliza variáveis de ambiente para evitar que credenciais fiquem expostas diretamente no código-fonte. Um arquivo `.env.example` é disponibilizado como referência.
+O arquivo `.env` está no `.gitignore`: nenhuma credencial é versionada. O carregamento é centralizado no `playwright.config.js`, e a `BASE_URL` alimenta o `baseURL` do Playwright.
 
 ---
 
 # ▶️ Executando os testes
 
-## Executar todos os testes
-
 ```bash
-npx playwright test
+npm test                # todos os níveis
+npm run test:nivel1     # smoke test
+npm run test:nivel2     # dependência de dados
+npm run test:nivel3     # ciclo de vida CRUD
+npm run test:nivel4     # jornada do cliente
 ```
 
-## Executar um nível específico
+Modos auxiliares:
 
 ```bash
-npx playwright test tests/smoke-test/login.spec.js
-npx playwright test tests/dependencia-de-dados/cadastro.spec.js
-npx playwright test tests/ciclo-de-vida-crud/crud.spec.js
-npx playwright test tests/jornada-do-cliente/jornada.spec.js
+npm run test:headed     # com o navegador visível
+npm run test:ui         # interface interativa do Playwright
+npm run report          # abre o último relatório HTML
 ```
 
-## Executar com navegador aberto
-
-```bash
-npx playwright test --headed
-```
-
-## Abrir a interface do Playwright
-
-```bash
-npx playwright test --ui
-```
+> ⚠️ Os testes criam dados reais (departamentos, usuários, conexões, contatos e chamados) em um ambiente de QA compartilhado. Por isso a execução é sequencial (`fullyParallel: false`, `workers: 1`) e roda apenas em Chromium, evitando que uma execução interfira na outra.
 
 ---
 
 # 🧪 Níveis do desafio
 
 ## 🟢 Nível 1 — Smoke Test
-Login na plataforma e navegação até as telas de CRUD de **Usuários** e **Departamentos**, validando que ambas carregam corretamente (elementos visuais, botões principais e grids).
+Login na plataforma e navegação até as telas de **Usuários** e **Departamentos**, validando que o título da listagem e o botão de cadastro de cada tela ficam visíveis.
 
 ## 🟡 Nível 2 — Dependência de Dados
-Criação de um **Departamento**, seguida da criação de um **Usuário** vinculado obrigatoriamente a esse Departamento recém-criado.
+Criação de um **Departamento** com nome único e validação dele na listagem. Em seguida, criação de um **Usuário** vinculado obrigatoriamente a esse departamento recém-criado, validado pelo e-mail na listagem.
 
 ## 🟠 Nível 3 — Ciclo de Vida CRUD
-Fluxo completo de uma **Conexão SMS**: criar, visualizar (validar na listagem), atualizar (editar um dado) e arquivar ao final.
+Ciclo completo de uma **Conexão SMS**:
+
+* **Create** — cria a conexão vinculada a um departamento
+* **Read** — valida a conexão na listagem
+* **Update** — edita o nome e valida que o nome novo entrou e o antigo saiu da listagem
+* **Delete** — arquiva a conexão e valida que ela saiu da listagem
 
 ## 🔴 Nível 4 — Jornada do Cliente E2E
-Fluxo completo simulando o atendimento a um cliente:
-* Cadastro e validação de um Contato
-* Criação do contato focado em Conexão SMS
-* Abertura de um chamado
-* Transferência do chamado para a própria fila de atendimento
-* Envio de mensagem, validação do envio e fechamento do chamado
+Fluxo ponta a ponta de um atendimento:
+
+* Criação da **Conexão SMS** que serve de canal, validada na listagem
+* Cadastro do **Contato**, validado na listagem
+* Abertura do **chamado** no chat, validada pela mensagem de início
+* **Transferência** do chamado, validada pelo registro no histórico
+* **Envio da mensagem**, validado pela mensagem no chat
+* **Fechamento** do chamado, validado pela mensagem de encerramento
+
+---
+
+# 🤖 Integração contínua
+
+O workflow `.github/workflows/e2e.yml` roda a cada push e pull request na `main`, instalando as dependências e validando que a suíte carrega sem erros.
+
+A execução do smoke test contra o ambiente de QA fica em um job separado, acionado manualmente (`workflow_dispatch`), porque depende de credenciais privadas. Para habilitá-lo, cadastre `BASE_URL`, `EMAIL` e `PASSWORD` em **Settings > Secrets and variables > Actions**.
 
 ---
 
@@ -173,18 +187,25 @@ Cada nível foi desenvolvido em uma branch própria, com commits incrementais re
 
 # 🏗️ Padrão utilizado
 
-Foi utilizado o padrão **Page Object Model (POM)**, separando as ações da interface da lógica dos testes para facilitar:
+Foi utilizado o padrão **Page Object Model (POM)**, separando as ações da interface da lógica dos testes:
 
-* ♻️ Reutilização de código
-* 🔧 Manutenção dos testes
-* 📖 Melhor legibilidade
-* 📈 Escalabilidade do projeto
+* ♻️ **Reutilização** — o login vive apenas na `LoginPage` e é reaproveitado pelos quatro níveis
+* 🎯 **Seletores estáveis** — preferência por `data-testid` sobre classes de CSS geradas em build
+* 🔀 **Massa dinâmica** — `support/dadosUnicos.js` gera nomes únicos por execução, evitando colisão de dados
+* ✅ **Asserções explícitas** — cada etapa termina em um `expect`, e não apenas no clique
+* 🔧 **Manutenção e escalabilidade** — mudanças de tela ficam concentradas nas Pages
 
 ---
 
 # ⚠️ Aviso
 
 Este é um projeto pessoal de estudo em automação de testes, criado em ambiente de QA com autorização. Não possui afiliação oficial.
+
+---
+
+# 📄 Licença
+
+Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE).
 
 ---
 

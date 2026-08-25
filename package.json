@@ -4,11 +4,18 @@
   "description": "Projeto de automação de testes E2E com Playwright, simulando fluxos reais de um usuário em uma plataforma web.",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:nivel1": "playwright test tests/smoke-test",
+    "test:nivel2": "playwright test tests/dependencia-de-dados",
+    "test:nivel3": "playwright test tests/ciclo-de-vida-crud",
+    "test:nivel4": "playwright test tests/jornada-do-cliente",
+    "report": "playwright show-report"
   },
   "keywords": ["playwright", "e2e", "automation", "qa", "testing"],
   "author": "Bruno Lima",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "commonjs",
   "repository": {
     "type": "git",

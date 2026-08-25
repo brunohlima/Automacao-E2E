@@ -1,22 +1,28 @@
-require('dotenv').config();
-const { test, expect } = require('@playwright/test');
+const { test } = require('@playwright/test');
+const { LoginPage } = require('../../pages/loginPage');
 const { JornadaPage } = require('../../pages/jornadaPage');
+const { gerarSufixoUnico } = require('../../support/dadosUnicos');
 
-test('Login, Criar Conexão SMS, Contato e mandar mensagem no chat', async ({ page }) => {
+test('Nivel 4 - Jornada do cliente: conexao, contato, chamado, mensagem e fechamento', async ({ page }) => {
+  const loginPage = new LoginPage(page);
   const jornadaPage = new JornadaPage(page);
 
-  // 1. Login
-  await jornadaPage.realizarLogin(process.env.EMAIL, process.env.PASSWORD);
+  const sufixo = gerarSufixoUnico();
+  const nomeConexao = `sms jornada ${sufixo}`;
+  const nomeContato = `contato ${sufixo}`;
+  const mensagem = `mensagem automatizada ${sufixo}`;
 
-  // 2. Nova conexão SMS
-  await jornadaPage.criarConexaoSms('teste');
+  await loginPage.acessarEAutenticar();
 
-  // 3. Cadastro de contato
-  await jornadaPage.cadastrarContato('teste', process.env.TEST_PHONE);
+  // 1. Canal de atendimento
+  await jornadaPage.criarConexaoSms(nomeConexao);
 
-  // 4. Transferência do chamado no chat
-  await jornadaPage.transferirChamadoNoChat();
+  // 2. Cliente que sera atendido
+  await jornadaPage.cadastrarContato(nomeContato, process.env.TEST_PHONE, 'teste');
 
-  // 5. Envio de mensagem e fechamento do chamado
-  await jornadaPage.enviarMensagemEFecharChamado('teste');
+  // 3. Atendimento: abre, transfere, responde e encerra o chamado
+  await jornadaPage.abrirChamadoDoPrimeiroContato();
+  await jornadaPage.transferirChamado();
+  await jornadaPage.enviarMensagem(mensagem);
+  await jornadaPage.fecharChamado();
 });

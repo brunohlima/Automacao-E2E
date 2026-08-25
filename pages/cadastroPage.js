@@ -1,64 +1,88 @@
 const { expect } = require('@playwright/test');
 
+/**
+ * Nivel 2 - Dependencia de dados.
+ * Cria um Departamento e, em seguida, um Usuario vinculado a ele.
+ */
 class CadastroPage {
   constructor(page) {
     this.page = page;
 
-    // Seletores da tela de Departamentos
-    this.botaoMenuGrid = page.locator('.lucide.lucide-layout-grid'); // Botão de menu (quadradinhos)
-    this.opcaoMenuDepartamentos = page.getByText('Departamentos'); // Opção Departamentos no menu
-    this.botaoAdicionarDepartamento = page.getByTestId('departments-list-button-add'); // Botão "+" para novo departamento
-    this.inputNomeDepartamento = page.getByTestId('departments-form-input-name'); // Campo do nome do departamento
-    this.botaoConfirmarDepartamento = page.getByTestId('departments-form-button-confirm'); // Botão Salvar departamento
+    // Menu principal
+    this.botaoMenuGrid = page.locator('.lucide.lucide-layout-grid');
+    this.opcaoMenuDepartamentos = page.getByTestId('menu-button-departments');
+    this.opcaoMenuUsuarios = page.getByTestId('menu-button-users');
 
-    // Seletores da tela de Usuários
-    this.opcaoMenuUsuarios = page.getByTestId('menu-button-users').getByText('Usuários'); // Opção Usuários no menu
-    this.botaoAdicionarUsuario = page.getByTestId('users-list-button-add'); // Botão "+" para novo usuário
-    this.inputNomeUsuario = page.getByTestId('users-form-input-name'); // Campo Nome do usuário
-    this.inputEmailUsuario = page.getByTestId('users-form-input-email'); // Campo E-mail do usuário
-    this.dropdownPerfil = page.locator('.p-0.css-n9qnu9').first(); // Campo para abrir a lista de Perfis
-    this.opcaoAdministrador = page.getByText('Administrador'); // Opção Administrador dentro da lista
-    this.dropdownDepartamentoVincular = page.locator('.gap-1.css-14oxtc6 > .p-0').first(); // Campo para abrir a lista de Departamentos
-    this.inputSenhaUsuario = page.getByTestId('users-form-input-password'); // Campo Senha
-    this.inputConfirmarSenhaUsuario = page.getByTestId('users-form-input-passwordConfirmation'); // Campo Confirmar Senha
-    this.botaoSalvarUsuario = page.getByTestId('users-form-button-save'); // Botão Salvar usuário
+    // Tela de Departamentos
+    this.tituloListaDepartamentos = page.getByTestId('departments-list-heading');
+    this.botaoAdicionarDepartamento = page.getByTestId('departments-list-button-add');
+    this.inputNomeDepartamento = page.getByTestId('departments-form-input-name');
+    this.botaoConfirmarDepartamento = page.getByTestId('departments-form-button-confirm');
+
+    // Tela de Usuarios
+    this.tituloListaUsuarios = page.getByTestId('users-list-heading');
+    this.botaoAdicionarUsuario = page.getByTestId('users-list-button-add');
+    this.inputNomeUsuario = page.getByTestId('users-form-input-name');
+    this.inputEmailUsuario = page.getByTestId('users-form-input-email');
+    // TODO: o dropdown de Perfil ainda nao expoe data-testid na aplicacao.
+    this.dropdownPerfil = page.locator('.p-0.css-n9qnu9').first();
+    this.opcaoAdministrador = page.getByText('Administrador');
+    // TODO: o dropdown de Departamento ainda nao expoe data-testid na aplicacao.
+    this.dropdownDepartamentoVincular = page.locator('.gap-1.css-14oxtc6 > .p-0').first();
+    this.inputSenhaUsuario = page.getByTestId('users-form-input-password');
+    this.inputConfirmarSenhaUsuario = page.getByTestId('users-form-input-passwordConfirmation');
+    this.botaoSalvarUsuario = page.getByTestId('users-form-button-save');
   }
 
-  // Método para criar um departamento passando o nome por parâmetro
   async criarDepartamento(nomeDepartamento) {
     await this.botaoMenuGrid.click();
     await this.opcaoMenuDepartamentos.click();
+    await expect(this.tituloListaDepartamentos).toBeVisible();
+
     await this.botaoAdicionarDepartamento.click();
     await this.inputNomeDepartamento.fill(nomeDepartamento);
     await this.botaoConfirmarDepartamento.click();
+
+    // O formulario precisa fechar antes de seguir para o cadastro do usuario
+    await expect(this.inputNomeDepartamento).toBeHidden();
   }
 
-  // Método para criar o usuário e vinculá-lo ao departamento dinâmico
+  /** Valida que o departamento recem-criado aparece na listagem. */
+  async validarDepartamentoCriado(nomeDepartamento) {
+    await expect(
+      this.page.getByRole('cell', { name: nomeDepartamento }).first()
+    ).toBeVisible();
+  }
+
   async criarUsuarioComDepartamento(nomeUsuario, emailUsuario, senhaUsuario, nomeDepartamento) {
     await this.botaoMenuGrid.click();
     await this.opcaoMenuUsuarios.click();
-    await this.botaoAdicionarUsuario.click();
+    await expect(this.tituloListaUsuarios).toBeVisible();
 
+    await this.botaoAdicionarUsuario.click();
     await this.inputNomeUsuario.fill(nomeUsuario);
     await this.inputEmailUsuario.fill(emailUsuario);
 
-    // Abre o campo de perfil e seleciona 'Administrador'
+    // Perfil do usuario
     await this.dropdownPerfil.click();
     await this.opcaoAdministrador.click();
 
-    // Abre o campo de departamento e clica no departamento dinâmico criado neste teste
+    // Vinculo com o departamento criado neste mesmo teste
     await this.dropdownDepartamentoVincular.click();
     await this.page.getByText(nomeDepartamento).click();
 
-    // Preenche as senhas e clica em salvar
     await this.inputSenhaUsuario.fill(senhaUsuario);
     await this.inputConfirmarSenhaUsuario.fill(senhaUsuario);
     await this.botaoSalvarUsuario.click();
+
+    await expect(this.inputNomeUsuario).toBeHidden();
   }
 
-  // Validação para checar se o nome do usuário aparece na tabela da listagem
-  async validarUsuarioCriado(nomeUsuario) {
-    await expect(this.page.getByRole('cell', { name: nomeUsuario }).first()).toBeVisible();
+  /** Valida que o usuario recem-criado aparece na listagem. */
+  async validarUsuarioCriado(emailUsuario) {
+    await expect(
+      this.page.getByRole('cell', { name: emailUsuario }).first()
+    ).toBeVisible();
   }
 }
 
