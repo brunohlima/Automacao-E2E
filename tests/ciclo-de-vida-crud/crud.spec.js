@@ -1,7 +1,16 @@
-const { test } = require('@playwright/test');
+const { test } = require('../../support/fixtures');
 const { LoginPage } = require('../../pages/loginPage');
 const { CrudPage } = require('../../pages/crudPage');
 const { gerarSufixoUnico } = require('../../support/dadosUnicos');
+
+/**
+ * A conta de QA tem cota de conexoes SMS. Se o teste falhar no meio do fluxo,
+ * a conexao criada continua ocupando a vaga e derruba a proxima execucao, entao
+ * o teardown garante que a listagem volte ao estado anterior.
+ */
+test.afterEach(async ({ page }) => {
+  await new CrudPage(page).limparConexoesSms();
+});
 
 test('Nivel 3 - Conexao SMS: criar, validar, editar e arquivar', async ({ page }) => {
   const loginPage = new LoginPage(page);

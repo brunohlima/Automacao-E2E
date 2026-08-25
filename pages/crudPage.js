@@ -24,10 +24,10 @@ class CrudPage {
     this.botaoSalvarSms = page.getByTestId('sms-form-button-submit');
 
     // Acoes do card na listagem
-    this.tresPontinhosCard = page.getByTestId('services-list-card-sms-button-dropdown');
+    this.tresPontinhosCard = page.getByTestId('services-list-card-sms-button-dropdown').first();
     this.opcaoEditar = page.getByTestId('services-list-card-sms-dropdown-edit');
-    this.opcaoArquivar = page.getByRole('link', { name: 'Arquivar' });
-    // TODO: a aplicacao reaproveita o testid do modal de usuarios na confirmacao de arquivamento.
+    this.opcaoArquivar = page.getByTestId('services-list-card-sms-dropdown-archive');
+    // A aplicacao reaproveita o testid do modal de usuarios na confirmacao de arquivamento.
     this.botaoConfirmarModal = page.getByTestId('users-archive-button-confirm');
   }
 
@@ -41,8 +41,10 @@ class CrudPage {
     await this.cardSms.click();
 
     // A conta de QA tem um limite contratado de conexoes SMS. Quando ele estoura,
-    // a plataforma abre um alerta no lugar do formulario. Sem esta checagem o teste
-    // apenas estouraria o timeout esperando por um formulario que nunca abre.
+    // a plataforma abre um alerta no lugar do formulario. Esperar primeiro por um
+    // dos dois evita checar o alerta antes de ele ter tido tempo de renderizar,
+    // o que deixaria a verificacao passar por engano.
+    await expect(this.inputNomeSms.or(this.avisoLimiteConexoes)).toBeVisible();
     await expect(
       this.avisoLimiteConexoes,
       'Limite de conexoes SMS atingido no ambiente de QA. Arquive ou remova conexoes existentes antes de rodar o teste.'
@@ -69,6 +71,33 @@ class CrudPage {
     await this.tresPontinhosCard.click();
     await this.opcaoArquivar.click();
     await this.botaoConfirmarModal.click();
+  }
+
+  /**
+   * Arquiva as conexoes SMS que sobraram na listagem.
+   *
+   * A conta de QA tem cota de conexoes SMS, entao uma execucao que falha no
+   * meio do fluxo deixa a conexao criada ocupando a vaga e derruba a proxima
+   * execucao. Chamado no teardown, isso mantem a suite repetivel.
+   */
+  async limparConexoesSms() {
+    await this.page.goto('/');
+    await this.acessarConexoes();
+
+    // Limite defensivo: evita laco infinito caso o card nao suma da listagem
+    for (let tentativa = 0; tentativa < 5; tentativa += 1) {
+      // A listagem carrega de forma assincrona: contar o card antes disso
+      // retornaria zero e encerraria a limpeza sem arquivar nada.
+      const existeConexao = await this.tresPontinhosCard
+        .waitFor({ state: 'visible', timeout: 10000 })
+        .then(() => true)
+        .catch(() => false);
+
+      if (!existeConexao) return;
+
+      await this.arquivarConexaoSms();
+      await expect(this.botaoConfirmarModal).toBeHidden();
+    }
   }
 
   /** Valida que a conexao aparece na listagem. */

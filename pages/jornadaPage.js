@@ -27,8 +27,8 @@ class JornadaPage {
     this.contactsTitle = page.getByTestId('contacts-label-title');
     this.btnCreateContact = page.getByTestId('contacts-button-create_contact');
     this.inputContactName = page.getByTestId('contacts-input_group-name');
-    // TODO: o select de Grupo (react-select) ainda nao expoe data-testid na aplicacao.
-    this.selectGroup = page.locator('.create-contact-select > .react_select__control > .react_select__value-container');
+    // TODO: o select de Conexao (react-select) ainda nao expoe data-testid na aplicacao.
+    this.selectConexao = page.locator('.create-contact-select');
     this.inputContactNumber = page.getByTestId('contacts-input_group-number');
     this.labelNomeNoDigisac = page.getByText('Nome no Digisac *Pessoa');
     this.btnSaveContact = page.getByTestId('contacts-button-save_contact');
@@ -59,7 +59,9 @@ class JornadaPage {
     await this.cardSms.click();
 
     // A conta de QA tem um limite contratado de conexoes SMS. Quando ele estoura,
-    // a plataforma abre um alerta no lugar do formulario.
+    // a plataforma abre um alerta no lugar do formulario. Esperar primeiro por um
+    // dos dois evita checar o alerta antes de ele ter tido tempo de renderizar.
+    await expect(this.inputSmsName.or(this.avisoLimiteConexoes)).toBeVisible();
     await expect(
       this.avisoLimiteConexoes,
       'Limite de conexoes SMS atingido no ambiente de QA. Arquive ou remova conexoes existentes antes de rodar o teste.'
@@ -75,16 +77,25 @@ class JornadaPage {
     await expect(this.page.getByText(nomeSms, { exact: true })).toBeVisible();
   }
 
-  async cadastrarContato(nomeContato, numeroContato, nomeGrupo) {
+  /**
+   * Cadastra o contato ja vinculado a conexao criada no inicio da jornada:
+   * e por ela que o chamado sera aberto no chat.
+   */
+  async cadastrarContato(nomeContato, numeroContato, nomeConexao) {
     await this.menuContacts.click();
     await expect(this.contactsTitle).toBeVisible();
 
     await this.btnCreateContact.click();
     await this.inputContactName.fill(nomeContato);
 
-    await this.selectGroup.click();
-    // TODO: sem data-testid nas opcoes do grupo, a selecao depende da posicao na lista.
-    await this.page.locator('div').filter({ hasText: new RegExp(`^${nomeGrupo}$`) }).nth(4).click();
+    // A conexao e escolhida pelo nome, e nao pela posicao na lista, para o
+    // teste continuar valido quando o ambiente tiver outras conexoes.
+    await this.selectConexao.click();
+    await this.page
+      .locator('[class*="react_select__option"]')
+      .filter({ hasText: nomeConexao })
+      .first()
+      .click();
 
     await this.inputContactNumber.fill(numeroContato);
     // Clique no rotulo fecha o dropdown aberto antes de salvar
