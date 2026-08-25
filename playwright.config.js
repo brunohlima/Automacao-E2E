@@ -33,6 +33,9 @@ module.exports = defineConfig({
   /* Reporters: HTML para analise local e lista para acompanhar a execucao. */
   reporter: [['html', { open: 'never' }], ['list']],
 
+  /* A jornada do nivel 4 percorre varias telas e supera o timeout padrao de 30s. */
+  timeout: 90 * 1000,
+
   use: {
     /* Permite usar caminhos relativos em page.goto(). */
     baseURL: process.env.BASE_URL,

@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../../support/fixtures');
 const { LoginPage, NavigationMenu } = require('../../pages/loginPage');
 
 test('Nivel 1 - Smoke Test: acesso as telas de Usuarios e Departamentos', async ({ page }) => {

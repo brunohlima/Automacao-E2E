@@ -1,4 +1,4 @@
-const { test } = require('@playwright/test');
+const { test } = require('../../support/fixtures');
 const { LoginPage } = require('../../pages/loginPage');
 const { CadastroPage } = require('../../pages/cadastroPage');
 const { gerarSufixoUnico } = require('../../support/dadosUnicos');
