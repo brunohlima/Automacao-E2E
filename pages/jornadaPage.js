@@ -13,6 +13,7 @@ class JornadaPage {
     this.menuConnections = page.getByTestId('menu-button-connections');
     this.btnCreateService = page.getByTestId('services-list-button-create');
     this.cardSms = page.getByTestId('services-create-card-sms');
+    this.avisoLimiteConexoes = page.getByRole('alertdialog', { name: 'Limite de conexões atingido' });
     this.inputSmsName = page.getByTestId('sms-form-input-name');
     // TODO: o dropdown de Departamento ainda nao expoe data-testid na aplicacao.
     this.selectDepartment = page.locator(
@@ -56,6 +57,14 @@ class JornadaPage {
 
     await this.btnCreateService.click();
     await this.cardSms.click();
+
+    // A conta de QA tem um limite contratado de conexoes SMS. Quando ele estoura,
+    // a plataforma abre um alerta no lugar do formulario.
+    await expect(
+      this.avisoLimiteConexoes,
+      'Limite de conexoes SMS atingido no ambiente de QA. Arquive ou remova conexoes existentes antes de rodar o teste.'
+    ).toBeHidden();
+
     await this.inputSmsName.fill(nomeSms);
     await this.selectDepartment.click();
     await this.optionSuporte.click();

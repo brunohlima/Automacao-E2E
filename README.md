@@ -109,8 +109,10 @@ cp .env.example .env
 | `BASE_URL` | Todos os níveis | URL de login da plataforma no ambiente de QA. |
 | `EMAIL` | Todos os níveis | E-mail do usuário administrador usado no login. |
 | `PASSWORD` | Todos os níveis | Senha do usuário administrador usado no login. |
-| `USER_PASSWORD_NIVEL2` | Nível 2 | Senha atribuída ao usuário criado durante o teste. |
+| `USER_PASSWORD_NIVEL2` | Nível 2 | Senha atribuída ao usuário criado durante o teste. Precisa atender à política da plataforma (veja abaixo). |
 | `TEST_PHONE` | Nível 4 | Número usado no cadastro do contato, evitando expor números reais no código. |
+
+> ⚠️ A plataforma valida a complexidade da senha do usuário criado no nível 2. `USER_PASSWORD_NIVEL2` precisa ter no mínimo 8 caracteres, ao menos 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial, sem sequências ou palavras conhecidas. Sem isso o botão Salvar permanece desabilitado e o teste falha.
 
 O arquivo `.env` está no `.gitignore`: nenhuma credencial é versionada. O carregamento é centralizado no `playwright.config.js`, e a `BASE_URL` alimenta o `baseURL` do Playwright.
 
