@@ -36,6 +36,8 @@ class JornadaPage {
     // Chamado no chat
     this.btnActionsFirstContact = page.getByTestId('contacts-button-actions_0').getByRole('button');
     this.btnChatFirstContact = page.getByTestId('contacts-button-chat_0');
+    this.chatCard = page.getByTestId('chat-card').first();
+    this.avisoConexaoInativa = page.getByText('Conexão inativa');
     this.btnCloseTicket = page.getByTestId('chat-button-close_ticket');
     this.btnTransferTicket = page.getByTestId('chat-button-transfer_ticket');
     this.indicatorClearSelect = page.locator(
@@ -109,7 +111,17 @@ class JornadaPage {
   async abrirChamadoDoPrimeiroContato() {
     await this.btnActionsFirstContact.click();
     await this.btnChatFirstContact.click();
-    await expect(this.ticketStartMessage).toBeVisible();
+    await this.chatCard.click();
+
+    // Uma conexao SMS recem-criada nasce inativa: ela depende de credenciais do
+    // provedor para entrar em operacao. Enquanto estiver inativa, a plataforma
+    // exibe "Conexao inativa" no lugar do campo de mensagem e o atendimento nao
+    // pode seguir. Enquanto o ambiente nao tiver uma conexao ativa, este e o
+    // ponto em que a jornada para.
+    await expect(
+      this.ticketStartMessage,
+      'O chamado nao abriu. Verifique se a conexao usada no atendimento esta ativa: uma conexao SMS criada pelo teste nasce inativa e bloqueia o envio de mensagem.'
+    ).toBeVisible();
   }
 
   /** Transfere o chamado e valida o registro da transferencia no historico. */
