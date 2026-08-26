@@ -114,6 +114,8 @@ cp .env.example .env
 
 > ⚠️ A plataforma valida a complexidade da senha do usuário criado no nível 2. `USER_PASSWORD_NIVEL2` precisa ter no mínimo 8 caracteres, ao menos 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial, sem sequências ou palavras conhecidas. Sem isso o botão Salvar permanece desabilitado e o teste falha.
 
+> ⚠️ Uma conexão SMS recém-criada leva alguns instantes para ativar no provedor. Enquanto isso, a plataforma exibe "Conexão inativa" no lugar do botão de abrir o chamado — o nível 4 aguarda essa ativação antes de seguir.
+
 O arquivo `.env` está no `.gitignore`: nenhuma credencial é versionada. O carregamento é centralizado no `playwright.config.js`, e a `BASE_URL` alimenta o `baseURL` do Playwright.
 
 ---

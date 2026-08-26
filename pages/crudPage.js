@@ -20,7 +20,9 @@ class CrudPage {
     this.dropdownDepartamento = page.locator(
       '#department > .nebula-ds.flex.w-full.items-center.border > .nebula-ds > .gap-1 > .p-0'
     );
-    this.opcaoSuporte = page.getByRole('option', { name: 'Suporte' });
+    // O nome dos departamentos varia entre ambientes de QA, entao a primeira
+    // opcao da lista e usada em vez de fixar um nome que pode nao existir.
+    this.primeiraOpcaoDepartamento = page.getByRole('option').first();
     this.botaoSalvarSms = page.getByTestId('sms-form-button-submit');
 
     // Acoes do card na listagem
@@ -52,7 +54,7 @@ class CrudPage {
 
     await this.inputNomeSms.fill(nomeConexao);
     await this.dropdownDepartamento.click();
-    await this.opcaoSuporte.click();
+    await this.primeiraOpcaoDepartamento.click();
     await this.botaoSalvarSms.click();
 
     await expect(this.inputNomeSms).toBeHidden();

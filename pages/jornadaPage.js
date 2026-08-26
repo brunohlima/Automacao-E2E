@@ -19,7 +19,9 @@ class JornadaPage {
     this.selectDepartment = page.locator(
       '#department > .nebula-ds.flex.w-full.items-center.border > .nebula-ds > .gap-1 > .p-0'
     );
-    this.optionSuporte = page.getByRole('option', { name: 'Suporte' });
+    // O nome dos departamentos varia entre ambientes de QA, entao a primeira
+    // opcao da lista e usada em vez de fixar um nome que pode nao existir.
+    this.primeiraOpcaoDepartamento = page.getByRole('option').first();
     this.btnSubmitSms = page.getByTestId('sms-form-button-submit');
 
     // Cadastro de contato
@@ -33,11 +35,28 @@ class JornadaPage {
     this.labelNomeNoDigisac = page.getByText('Nome no Digisac *Pessoa');
     this.btnSaveContact = page.getByTestId('contacts-button-save_contact');
 
+    // Filtro da listagem de contatos: com muitos contatos no ambiente, o
+    // recem-criado nao fica na primeira posicao sem filtrar pelo nome.
+    this.btnShowFilters = page.getByTestId('contacts-button-show_filters');
+    this.inputFiltroNomeContato = page.getByTestId('contacts-input_filter-name');
+
     // Chamado no chat
     this.btnActionsFirstContact = page.getByTestId('contacts-button-actions_0').getByRole('button');
     this.btnChatFirstContact = page.getByTestId('contacts-button-chat_0');
     this.chatCard = page.getByTestId('chat-card').first();
     this.avisoConexaoInativa = page.getByText('Conexão inativa');
+    this.btnOpenTicket = page.getByTestId('open-ticket-button');
+    // O modal de abertura reaproveita o testid do botao de confirmar do modal
+    // de transferencia, que fica montado (oculto) na pagina o tempo todo.
+    // Por isso o botao e escopado ao dialogo visivel, e nao buscado solto.
+    this.dialogoVisivel = page.locator('.modal.show, [role="dialog"]:visible').last();
+    this.selectDepartamentoAbertura = page.getByTestId('transfer-ticket-department-select');
+    // Este select nao expoe role="option" nas suas opcoes (diferente do
+    // select de departamento do formulario de conexao SMS), entao a opcao
+    // e escolhida pelo item de menu renderizado.
+    this.primeiraOpcaoDepartamentoAbertura = page.locator('.react_select__menu').locator('div').first();
+    this.inputComentarioAbertura = page.getByTestId('add_comment-Modal-OpenTicket');
+    this.btnConfirmarAbertura = this.dialogoVisivel.getByTestId('confirm-transfer-ticket-button');
     this.btnCloseTicket = page.getByTestId('chat-button-close_ticket');
     this.btnTransferTicket = page.getByTestId('chat-button-transfer_ticket');
     this.indicatorClearSelect = page.locator(
@@ -71,7 +90,7 @@ class JornadaPage {
 
     await this.inputSmsName.fill(nomeSms);
     await this.selectDepartment.click();
-    await this.optionSuporte.click();
+    await this.primeiraOpcaoDepartamento.click();
     await this.btnSubmitSms.click();
 
     // O formulario fecha e a conexao passa a existir na listagem
@@ -104,23 +123,38 @@ class JornadaPage {
     await this.labelNomeNoDigisac.click();
     await this.btnSaveContact.click();
 
-    // O contato precisa aparecer na listagem antes de abrirmos o chamado
+    // Volta a listagem e filtra pelo nome: com muitos contatos no ambiente,
+    // o recem-criado nao aparece na primeira posicao sem esse filtro, e as
+    // proximas acoes (abrir o chamado) dependem de agir sobre a linha certa.
+    await this.menuContacts.click();
+    await this.btnShowFilters.click();
+    await this.inputFiltroNomeContato.fill(nomeContato);
     await expect(this.page.getByText(nomeContato, { exact: true }).first()).toBeVisible();
   }
 
+  /** Abre o chamado do contato filtrado na listagem (ver cadastrarContato). */
   async abrirChamadoDoPrimeiroContato() {
     await this.btnActionsFirstContact.click();
     await this.btnChatFirstContact.click();
     await this.chatCard.click();
 
-    // Uma conexao SMS recem-criada nasce inativa: ela depende de credenciais do
-    // provedor para entrar em operacao. Enquanto estiver inativa, a plataforma
-    // exibe "Conexao inativa" no lugar do campo de mensagem e o atendimento nao
-    // pode seguir. Enquanto o ambiente nao tiver uma conexao ativa, este e o
-    // ponto em que a jornada para.
+    // Uma conexao SMS recem-criada pode levar alguns instantes para ativar no
+    // provedor. Enquanto isso, a plataforma exibe "Conexao inativa" no lugar
+    // do botao de abrir o chamado.
+    await expect(this.avisoConexaoInativa).toBeHidden({ timeout: 30000 });
+
+    // O chat abre em modo leitura: e preciso abrir o chamado explicitamente,
+    // escolhendo um departamento (obrigatorio) e um comentario, antes do
+    // campo de mensagem existir.
+    await this.btnOpenTicket.click();
+    await this.selectDepartamentoAbertura.click();
+    await this.primeiraOpcaoDepartamentoAbertura.click();
+    await this.inputComentarioAbertura.fill('Chamado aberto pela automacao');
+    await this.btnConfirmarAbertura.click();
+
     await expect(
       this.ticketStartMessage,
-      'O chamado nao abriu. Verifique se a conexao usada no atendimento esta ativa: uma conexao SMS criada pelo teste nasce inativa e bloqueia o envio de mensagem.'
+      'O chamado nao abriu mesmo apos preencher o comentario de abertura.'
     ).toBeVisible();
   }
 
