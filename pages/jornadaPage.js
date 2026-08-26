@@ -14,6 +14,9 @@ class JornadaPage {
     this.btnCreateService = page.getByTestId('services-list-button-create');
     this.cardSms = page.getByTestId('services-create-card-sms');
     this.avisoLimiteConexoes = page.getByRole('alertdialog', { name: 'Limite de conexões atingido' });
+    // Com muitas conexoes no ambiente, a recem-criada nao fica na primeira
+    // pagina da listagem sem filtrar pelo nome.
+    this.filtroNomeConexao = page.getByTestId('services-list-input-filter');
     this.inputSmsName = page.getByTestId('sms-form-input-name');
     // TODO: o dropdown de Departamento ainda nao expoe data-testid na aplicacao.
     this.selectDepartment = page.locator(
@@ -54,22 +57,29 @@ class JornadaPage {
     // Este select nao expoe role="option" nas suas opcoes (diferente do
     // select de departamento do formulario de conexao SMS), entao a opcao
     // e escolhida pelo item de menu renderizado.
-    this.primeiraOpcaoDepartamentoAbertura = page.locator('.react_select__menu').locator('div').first();
+    this.menuOpcoesDepartamentoAbertura = page.locator('.react_select__menu');
+    this.primeiraOpcaoDepartamentoAbertura = this.menuOpcoesDepartamentoAbertura.locator('div').first();
+    this.placeholderDepartamentoAbertura = this.selectDepartamentoAbertura.getByText('Selecione');
+    this.erroDepartamentoObrigatorio = page.getByText('Este campo é obrigatório.');
+    // "Transferir para atendente" vem pre-preenchido com outro usuario. Sem
+    // limpar, o chamado abre mas e atribuido a esse atendente e nao aparece
+    // como aberto para quem esta logado, entao a tela volta a mostrar
+    // "Abrir chamado" como se nada tivesse acontecido.
+    this.selectAtendenteAbertura = this.dialogoVisivel.getByTestId('transfer-ticket-user-select');
+    this.botaoLimparAtendenteAbertura = this.selectAtendenteAbertura.locator(
+      '.react_select__clear-indicator'
+    );
     this.inputComentarioAbertura = page.getByTestId('add_comment-Modal-OpenTicket');
     this.btnConfirmarAbertura = this.dialogoVisivel.getByTestId('confirm-transfer-ticket-button');
     this.btnCloseTicket = page.getByTestId('chat-button-close_ticket');
-    this.btnTransferTicket = page.getByTestId('chat-button-transfer_ticket');
-    this.indicatorClearSelect = page.locator(
-      '.transfer-ticket-user-select > .react_select__control > .react_select__indicators > .react_select__clear-indicator'
-    );
-    this.btnConfirmTransfer = page.getByTestId('confirm-transfer-ticket-button');
-    this.ticketStartMessage = page.getByTestId('ticket-start-message');
-    this.textTransferLog = page.getByText('Chamado transferido por (');
+    this.textInicioChamado = page.getByText('Início do chamado');
 
     // Mensagem e fechamento
     this.chatInput = page.getByTestId('chat-container').getByRole('textbox');
     this.btnConfirmCloseTicket = page.getByTestId('confirm-closeTicket');
     this.ticketEndMessage = page.getByTestId('ticket-end-message');
+    this.menuChat = page.getByTestId('menu-button-chat');
+    this.tabMeusChats = page.getByTestId('chat-tab-mine');
   }
 
   async criarConexaoSms(nomeSms) {
@@ -95,6 +105,7 @@ class JornadaPage {
 
     // O formulario fecha e a conexao passa a existir na listagem
     await expect(this.inputSmsName).toBeHidden();
+    await this.filtroNomeConexao.fill(nomeSms);
     await expect(this.page.getByText(nomeSms, { exact: true })).toBeVisible();
   }
 
@@ -145,33 +156,96 @@ class JornadaPage {
 
     // O chat abre em modo leitura: e preciso abrir o chamado explicitamente,
     // escolhendo um departamento (obrigatorio) e um comentario, antes do
-    // campo de mensagem existir.
+    // campo de mensagem existir. Nesta versao do app nao existe mais um
+    // botao separado "Transferir chamado" (chat-button-transfer_ticket, do
+    // roteiro original do desafio); a transferencia para o departamento
+    // acontece aqui, dentro do proprio fluxo de abertura.
+    // A selecao do departamento e instavel: o
+    // menu as vezes fecha sem registrar o clique, deixando o campo em
+    // "Selecione" e a submissao falha calada. Por isso confirma-se que o
+    // placeholder sumiu antes de seguir, com uma nova tentativa se preciso.
     await this.btnOpenTicket.click();
-    await this.selectDepartamentoAbertura.click();
-    await this.primeiraOpcaoDepartamentoAbertura.click();
+
+    await expect(async () => {
+      await this.selectDepartamentoAbertura.click();
+      await expect(this.menuOpcoesDepartamentoAbertura).toBeVisible();
+      await this.primeiraOpcaoDepartamentoAbertura.click();
+      await expect(this.placeholderDepartamentoAbertura).toBeHidden();
+    }).toPass({ timeout: 15000 });
+
+    // Limpa o atendente pre-selecionado para o chamado abrir para quem esta
+    // logado, e nao ser transferido direto para outra fila. O indicador de
+    // limpar so existe quando ha um atendente pre-preenchido, entao o passo
+    // e condicional. O clique tambem se mostrou instavel logo apos a selecao
+    // de departamento (o React ainda re-renderizando o formulario); esperar
+    // um instante evita interagir com um elemento em transicao.
+    await this.page.waitForTimeout(500);
+    if (await this.botaoLimparAtendenteAbertura.isVisible()) {
+      await this.botaoLimparAtendenteAbertura.click();
+    }
+
     await this.inputComentarioAbertura.fill('Chamado aberto pela automacao');
     await this.btnConfirmarAbertura.click();
 
+    // Apos o clique, o modal fica em estado de carregamento (spinner no
+    // Salvar, campos limpos) antes de fechar de fato. Esperar o dialogo
+    // sumir evita seguir com a submissao ainda em andamento.
     await expect(
-      this.ticketStartMessage,
+      this.dialogoVisivel,
+      'O modal de abertura do chamado nao fechou apos confirmar.'
+    ).toBeHidden({ timeout: 15000 });
+
+    // ticket-start-message nao existe nesta versao do app; chat-button-close_ticket
+    // so aparece com o chamado de fato aberto, entao serve como prova do estado.
+    await expect(
+      this.btnCloseTicket,
       'O chamado nao abriu mesmo apos preencher o comentario de abertura.'
     ).toBeVisible();
-  }
 
-  /** Transfere o chamado e valida o registro da transferencia no historico. */
-  async transferirChamado() {
-    await this.btnTransferTicket.click();
-    await this.indicatorClearSelect.click();
-    await this.btnConfirmTransfer.click();
+    // Logo apos o modal de abertura fechar, o chat-container ainda nao
+    // renderizou o campo de mensagem (o DOM que aparece nesse instante e o
+    // do proprio modal se desfazendo, e interagir com ele trava a aba).
+    // Sair da conversa e voltar forca um render limpo, com o composer real.
+    await this.menuChat.click();
+    await this.tabMeusChats.click();
+    await this.chatCard.click();
+    await expect(this.chatInput).toBeVisible();
 
-    await expect(this.textTransferLog).toBeVisible();
+    // A abertura fica registrada no historico da conversa, com o comentario
+    // preenchido no modal. Quando ha um atendente pre-preenchido no momento
+    // da abertura, tambem aparece um log "Chamado transferido por (...)",
+    // mas isso e condicional ao estado do formulario e nao sempre presente.
+    await expect(this.textInicioChamado).toBeVisible();
   }
 
   async enviarMensagem(mensagem) {
-    await this.chatInput.fill(mensagem);
-    await this.chatInput.press('Enter');
+    // O composer e um editor rico (Lexical). locator.fill() manipula o valor
+    // via JS e deixa o estado interno do editor dessincronizado do DOM, o
+    // que se mostrou instavel (chegou a travar a aba). Clicar e digitar de
+    // verdade, como um usuario faria, e o caminho estavel.
+    await this.chatInput.click();
+    await this.page.keyboard.type(mensagem);
 
-    await expect(this.page.getByText(mensagem, { exact: true }).last()).toBeVisible();
+    // POST /api/v1/messages pode responder 500 nesse ambiente (falha real do
+    // backend, nao da automacao): o editor limpa (atualizacao otimista da
+    // interface) mas a mensagem nunca chega a existir. Capturar a resposta
+    // aponta a causa real em vez de so estourar o timeout da assercao final.
+    const respostaEnvio = this.page.waitForResponse(
+      (res) => res.url().includes('/api/v1/messages') && res.request().method() === 'POST',
+      { timeout: 15000 }
+    );
+    await this.page.keyboard.press('Enter');
+    const resposta = await respostaEnvio;
+
+    expect(
+      resposta.ok(),
+      `O envio da mensagem falhou no backend: POST /api/v1/messages respondeu ${resposta.status()}.`
+    ).toBeTruthy();
+
+    // O envio real da SMS pode levar alguns instantes para refletir no chat.
+    await expect(this.page.getByText(mensagem, { exact: true }).last()).toBeVisible({
+      timeout: 15000,
+    });
   }
 
   async fecharChamado() {

@@ -13,6 +13,9 @@ class CrudPage {
     this.botaoAdicionarConexao = page.getByTestId('services-list-button-create');
     this.cardSms = page.getByTestId('services-create-card-sms');
     this.avisoLimiteConexoes = page.getByRole('alertdialog', { name: 'Limite de conexões atingido' });
+    // Com muitas conexoes no ambiente, a recem-criada nao fica na primeira
+    // pagina da listagem sem filtrar pelo nome.
+    this.filtroNomeConexao = page.getByTestId('services-list-input-filter');
 
     // Formulario de cadastro/edicao
     this.inputNomeSms = page.getByTestId('sms-form-input-name');
@@ -58,6 +61,7 @@ class CrudPage {
     await this.botaoSalvarSms.click();
 
     await expect(this.inputNomeSms).toBeHidden();
+    await this.filtroNomeConexao.fill(nomeConexao);
   }
 
   async editarConexaoSms(novoNomeConexao) {
@@ -67,6 +71,9 @@ class CrudPage {
     await this.botaoSalvarSms.click();
 
     await expect(this.inputNomeSms).toBeHidden();
+    // O filtro ainda tem o nome antigo: sem atualizar, a linha editada some
+    // da lista filtrada e as proximas acoes (arquivar) perdem o alvo.
+    await this.filtroNomeConexao.fill(novoNomeConexao);
   }
 
   async arquivarConexaoSms() {
@@ -76,15 +83,22 @@ class CrudPage {
   }
 
   /**
-   * Arquiva as conexoes SMS que sobraram na listagem.
+   * Arquiva as conexoes SMS criadas por este teste que sobraram na listagem.
    *
    * A conta de QA tem cota de conexoes SMS, entao uma execucao que falha no
    * meio do fluxo deixa a conexao criada ocupando a vaga e derruba a proxima
    * execucao. Chamado no teardown, isso mantem a suite repetivel.
+   *
+   * Recebe o prefixo usado nos nomes de conexao deste teste (ex: "conexao ",
+   * "sms jornada ") e filtra por ele antes de arquivar. Sem esse filtro, com
+   * o ambiente tendo dezenas de conexoes de outras origens, o teardown
+   * arquivaria a primeira conexao SMS que encontrasse na listagem inteira,
+   * que pode nao ter sido criada por este teste.
    */
-  async limparConexoesSms() {
+  async limparConexoesSms(prefixoNome) {
     await this.page.goto('/');
     await this.acessarConexoes();
+    await this.filtroNomeConexao.fill(prefixoNome);
 
     // Limite defensivo: evita laco infinito caso o card nao suma da listagem
     for (let tentativa = 0; tentativa < 5; tentativa += 1) {
@@ -99,16 +113,21 @@ class CrudPage {
 
       await this.arquivarConexaoSms();
       await expect(this.botaoConfirmarModal).toBeHidden();
+      // O filtro persiste apos arquivar; reaplica para a proxima iteracao
+      // do loop encontrar apenas conexoes deste teste, se sobrar mais de uma.
+      await this.filtroNomeConexao.fill(prefixoNome);
     }
   }
 
-  /** Valida que a conexao aparece na listagem. */
+  /** Valida que a conexao aparece na listagem (filtrando por ela, ja que o ambiente tem muitas). */
   async validarConexaoNaListagem(nomeConexao) {
+    await this.filtroNomeConexao.fill(nomeConexao);
     await expect(this.page.getByText(nomeConexao, { exact: true })).toBeVisible();
   }
 
   /** Valida que a conexao saiu da listagem apos o arquivamento. */
   async validarConexaoRemovida(nomeConexao) {
+    await this.filtroNomeConexao.fill(nomeConexao);
     await expect(this.page.getByText(nomeConexao, { exact: true })).toBeHidden();
   }
 }
