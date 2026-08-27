@@ -43,7 +43,7 @@ module.exports = defineConfig({
     /* Evidencias apenas quando algo falha, para nao inflar o report. */
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'on',
   },
 
   /**

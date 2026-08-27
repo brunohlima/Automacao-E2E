@@ -36,6 +36,12 @@ test('Nivel 3 - Conexao SMS: criar, validar, editar e arquivar', async ({ page }
   await crudPage.validarConexaoNaListagem(nomeConexaoEditada);
   await crudPage.validarConexaoRemovida(nomeConexao);
 
+  // validarConexaoRemovida acima deixou o filtro com o nome ANTIGO (que
+  // corretamente nao aparece mais). Sem refazer o filtro aqui, arquivarConexaoSms
+  // tentaria abrir o menu numa listagem vazia pelo motivo errado: nao porque
+  // a conexao sumiu, mas porque o filtro aponta pro nome que ja nao existe.
+  await crudPage.validarConexaoNaListagem(nomeConexaoEditada);
+
   // DELETE (arquivamento)
   await crudPage.arquivarConexaoSms();
   await crudPage.validarConexaoRemovida(nomeConexaoEditada);
