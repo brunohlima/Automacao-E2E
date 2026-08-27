@@ -25,16 +25,14 @@ class CadastroPage {
     // Tela de Usuarios
     this.tituloListaUsuarios = page.getByTestId('users-list-heading');
     this.botaoAdicionarUsuario = page.getByTestId('users-list-button-add');
-    // O botao Adicionar abre um assistente de 2 passos: escolher o tipo de
-    // cadastro (manual ou em massa) antes de chegar ao formulario em si.
-    this.opcaoCriarUmUsuario = page.getByRole('radio', { name: /^Criar um usuário/ });
-    this.botaoContinuarAssistente = page.getByRole('button', { name: 'Continuar' });
+    // A aplicacao removeu o assistente de 2 passos (escolher tipo de cadastro);
+    // o botao Adicionar agora vai direto para o formulario unico "Adicionar usuario".
     this.inputNomeUsuario = page.getByTestId('users-form-input-name');
     this.inputEmailUsuario = page.getByTestId('users-form-input-email');
-    // TODO: o dropdown de Perfil ainda nao expoe data-testid na aplicacao.
-    this.dropdownPerfil = page.locator('.p-0.css-n9qnu9').first();
+    // TODO: os dropdowns de Cargos e Departamentos ainda nao expoe data-testid.
+    // Sao selects customizados; nesta tela, Cargos e o primeiro e Departamentos o segundo.
+    this.dropdownCargo = page.locator('.p-0.css-n9qnu9').first();
     this.opcaoAdministrador = page.getByText('Administrador');
-    // TODO: o dropdown de Departamento ainda nao expoe data-testid na aplicacao.
     this.dropdownDepartamentoVincular = page.locator('.gap-1.css-14oxtc6 > .p-0').first();
     this.inputSenhaUsuario = page.getByTestId('users-form-input-password');
     this.inputConfirmarSenhaUsuario = page.getByTestId('users-form-input-passwordConfirmation');
@@ -70,15 +68,15 @@ class CadastroPage {
     await this.opcaoMenuUsuarios.click();
     await expect(this.tituloListaUsuarios).toBeVisible();
 
+    // Vai direto para o formulario unico de cadastro (sem assistente de 2 passos).
     await this.botaoAdicionarUsuario.click();
-    await this.opcaoCriarUmUsuario.click();
-    await this.botaoContinuarAssistente.click();
+    await expect(this.inputNomeUsuario).toBeVisible();
 
     await this.inputNomeUsuario.fill(nomeUsuario);
     await this.inputEmailUsuario.fill(emailUsuario);
 
-    // Perfil do usuario
-    await this.dropdownPerfil.click();
+    // Cargo do usuario
+    await this.dropdownCargo.click();
     await this.opcaoAdministrador.click();
 
     // Vinculo com o departamento criado neste mesmo teste. Com muitos
