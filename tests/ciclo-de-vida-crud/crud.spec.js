@@ -3,15 +3,9 @@ const { LoginPage } = require('../../pages/loginPage');
 const { CrudPage } = require('../../pages/crudPage');
 const { gerarSufixoUnico } = require('../../support/dadosUnicos');
 
-// Prefixo usado em todos os nomes de conexao deste teste (ver nomeConexao
-// abaixo), para o teardown so mexer em conexoes criadas por ele.
 const PREFIXO_CONEXAO = 'conexao ';
 
-/**
- * A conta de QA tem cota de conexoes SMS. Se o teste falhar no meio do fluxo,
- * a conexao criada continua ocupando a vaga e derruba a proxima execucao, entao
- * o teardown garante que a listagem volte ao estado anterior.
- */
+// Preserva a cota de conexoes mesmo quando o teste falha.
 test.afterEach(async ({ page }) => {
   await new CrudPage(page).limparConexoesSms(PREFIXO_CONEXAO);
 });
@@ -27,22 +21,16 @@ test('Nivel 3 - Conexao SMS: criar, validar, editar e arquivar', async ({ page }
   await loginPage.acessarEAutenticar();
   await crudPage.acessarConexoes();
 
-  // CREATE + READ
   await crudPage.criarConexaoSms(nomeConexao);
   await crudPage.validarConexaoNaListagem(nomeConexao);
 
-  // UPDATE: o nome novo entra na listagem e o antigo sai
   await crudPage.editarConexaoSms(nomeConexaoEditada);
   await crudPage.validarConexaoNaListagem(nomeConexaoEditada);
   await crudPage.validarConexaoRemovida(nomeConexao);
 
-  // validarConexaoRemovida acima deixou o filtro com o nome ANTIGO (que
-  // corretamente nao aparece mais). Sem refazer o filtro aqui, arquivarConexaoSms
-  // tentaria abrir o menu numa listagem vazia pelo motivo errado: nao porque
-  // a conexao sumiu, mas porque o filtro aponta pro nome que ja nao existe.
+  // Restaura o filtro para que o arquivamento encontre o nome editado.
   await crudPage.validarConexaoNaListagem(nomeConexaoEditada);
 
-  // DELETE (arquivamento)
   await crudPage.arquivarConexaoSms();
   await crudPage.validarConexaoRemovida(nomeConexaoEditada);
 });

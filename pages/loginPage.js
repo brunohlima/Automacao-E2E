@@ -1,9 +1,5 @@
 const { expect } = require('@playwright/test');
 
-/**
- * Tela de login e ponto de entrada de todos os testes.
- * Centralizar o login aqui evita que cada spec repita o mesmo fluxo.
- */
 class LoginPage {
   constructor(page) {
     this.page = page;
@@ -13,7 +9,6 @@ class LoginPage {
   }
 
   async acessar() {
-    // baseURL vem do playwright.config.js, que le a BASE_URL do .env
     await this.page.goto('/');
   }
 
@@ -23,7 +18,6 @@ class LoginPage {
     await this.submitButton.click();
   }
 
-  /** Acessa a plataforma e autentica com as credenciais do .env. */
   async acessarEAutenticar() {
     await this.acessar();
     await this.realizarLogin(process.env.EMAIL, process.env.PASSWORD);
