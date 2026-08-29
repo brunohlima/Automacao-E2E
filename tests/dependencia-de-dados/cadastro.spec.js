@@ -7,7 +7,6 @@ test('Nivel 2 - Criar Departamento e Usuario vinculado a ele', async ({ page }) 
   const loginPage = new LoginPage(page);
   const cadastroPage = new CadastroPage(page);
 
-  // Massa dinamica: a plataforma nao aceita nome de departamento nem e-mail repetidos
   const sufixo = gerarSufixoUnico();
   const nomeDepartamento = `quality assurance ${sufixo}`;
   const nomeUsuario = `usuario automacao ${sufixo}`;
@@ -15,7 +14,6 @@ test('Nivel 2 - Criar Departamento e Usuario vinculado a ele', async ({ page }) 
 
   await loginPage.acessarEAutenticar();
 
-  // O usuario so pode ser criado depois que o departamento existe: a dependencia do nivel
   await cadastroPage.criarDepartamento(nomeDepartamento);
   await cadastroPage.validarDepartamentoCriado(nomeDepartamento);
 
