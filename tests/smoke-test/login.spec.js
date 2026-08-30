@@ -1,17 +1,17 @@
 const { test, expect } = require('../../support/fixtures');
-const { LoginPage, NavigationMenu } = require('../../pages/loginPage');
+const { PaginaLogin, MenuNavegacao } = require('../../pages/loginPage');
 
-test('Nivel 1 - Smoke Test: acesso as telas de Usuarios e Departamentos', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const navMenu = new NavigationMenu(page);
+test('Nivel 1 - Teste de fumaca: acesso as telas de Usuarios e Departamentos', async ({ page }) => {
+  const paginaLogin = new PaginaLogin(page);
+  const menuNavegacao = new MenuNavegacao(page);
 
-  await loginPage.acessarEAutenticar();
+  await paginaLogin.acessarEAutenticar();
 
-  await navMenu.irParaUsuarios();
+  await menuNavegacao.irParaUsuarios();
   await expect(page.getByTestId('users-list-heading')).toBeVisible();
   await expect(page.getByTestId('users-list-button-add')).toBeVisible();
 
-  await navMenu.irParaDepartamentos();
+  await menuNavegacao.irParaDepartamentos();
   await expect(page.getByTestId('departments-list-heading')).toBeVisible();
   await expect(page.getByTestId('departments-list-button-add')).toBeVisible();
 });

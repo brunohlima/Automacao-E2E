@@ -2,28 +2,28 @@ const { expect } = require('@playwright/test');
 
 class ListagemVaziaError extends Error {}
 
-class CrudPage {
+class PaginaCrud {
   constructor(page) {
     this.page = page;
 
     this.menuConexoes = page.getByTestId('menu-button-connections');
     this.botaoAdicionarConexao = page.getByTestId('services-list-button-create');
-    this.cardSms = page.getByTestId('services-create-card-sms');
+    this.cartaoSms = page.getByTestId('services-create-card-sms');
     this.avisoLimiteConexoes = page.getByRole('alertdialog', { name: 'Limite de conexões atingido' });
     this.filtroNomeConexao = page.getByTestId('services-list-input-filter');
     // A busca inclui arquivadas; restringir a aba evita selecionar massa antiga.
     this.abaAtivas = page.getByRole('tab', { name: /^Ativas/ });
     this.avisoSemResultados = page.getByText('Nenhum resultado encontrado', { exact: true });
 
-    this.inputNomeSms = page.getByTestId('sms-form-input-name');
+    this.campoNomeSms = page.getByTestId('sms-form-input-name');
     // Substituir seletor CSS quando a aplicacao expuser data-testid.
-    this.dropdownDepartamento = page.locator(
+    this.seletorDepartamento = page.locator(
       '#department > .nebula-ds.flex.w-full.items-center.border > .nebula-ds > .gap-1 > .p-0'
     );
     this.primeiraOpcaoDepartamento = page.getByRole('option').first();
     this.botaoSalvarSms = page.getByTestId('sms-form-button-submit');
 
-    this.tresPontinhosCard = page.getByTestId('services-list-card-sms-button-dropdown').first();
+    this.botaoAcoesCartao = page.getByTestId('services-list-card-sms-button-dropdown').first();
     this.opcaoEditar = page.getByTestId('services-list-card-sms-dropdown-edit');
     this.opcaoArquivar = page.getByTestId('services-list-card-sms-dropdown-archive');
     // O modal de conexoes reutiliza o testid de usuarios.
@@ -64,7 +64,7 @@ class CrudPage {
 
   async abrirMenuCardSms() {
     for (let tentativa = 1; tentativa <= 3; tentativa += 1) {
-      const abriu = await this.tresPontinhosCard
+      const abriu = await this.botaoAcoesCartao
         .click({ timeout: 3000 })
         .then(() => this.opcaoEditar.waitFor({ state: 'visible', timeout: 2000 }))
         .then(() => true)
@@ -85,30 +85,30 @@ class CrudPage {
 
   async criarConexaoSms(nomeConexao) {
     await this.botaoAdicionarConexao.click();
-    await this.cardSms.click();
+    await this.cartaoSms.click();
 
     // O alerta de cota substitui o formulario no ambiente compartilhado.
-    await expect(this.inputNomeSms.or(this.avisoLimiteConexoes)).toBeVisible();
+    await expect(this.campoNomeSms.or(this.avisoLimiteConexoes)).toBeVisible();
     await expect(
       this.avisoLimiteConexoes,
       'Limite de conexoes SMS atingido no ambiente de QA. Arquive ou remova conexoes existentes antes de rodar o teste.'
     ).toBeHidden();
 
-    await this.inputNomeSms.fill(nomeConexao);
-    await this.dropdownDepartamento.click();
+    await this.campoNomeSms.fill(nomeConexao);
+    await this.seletorDepartamento.click();
     await this.primeiraOpcaoDepartamento.click();
     await this.botaoSalvarSms.click();
 
-    await expect(this.inputNomeSms).toBeHidden();
+    await expect(this.campoNomeSms).toBeHidden();
     await this.filtroNomeConexao.fill(nomeConexao);
   }
 
   async editarConexaoSms(novoNomeConexao) {
     await this.selecionarOpcaoMenuCard(this.opcaoEditar);
-    await this.inputNomeSms.fill(novoNomeConexao);
+    await this.campoNomeSms.fill(novoNomeConexao);
     await this.botaoSalvarSms.click();
 
-    await expect(this.inputNomeSms).toBeHidden();
+    await expect(this.campoNomeSms).toBeHidden();
     await this.filtroNomeConexao.fill(novoNomeConexao);
   }
 
@@ -135,8 +135,8 @@ class CrudPage {
     await this.filtroNomeConexao.fill(prefixoNome);
 
     for (let tentativa = 0; tentativa < 5; tentativa += 1) {
-      await this.tresPontinhosCard.waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
-      const existeConexao = (await this.tresPontinhosCard.count()) > 0;
+      await this.botaoAcoesCartao.waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
+      const existeConexao = (await this.botaoAcoesCartao.count()) > 0;
 
       if (!existeConexao) return;
 
@@ -165,4 +165,4 @@ class CrudPage {
   }
 }
 
-module.exports = { CrudPage };
+module.exports = { PaginaCrud };

@@ -1,27 +1,27 @@
 const { test } = require('../../support/fixtures');
-const { LoginPage } = require('../../pages/loginPage');
-const { CadastroPage } = require('../../pages/cadastroPage');
+const { PaginaLogin } = require('../../pages/loginPage');
+const { PaginaCadastro } = require('../../pages/cadastroPage');
 const { gerarSufixoUnico } = require('../../support/dadosUnicos');
 
 test('Nivel 2 - Criar Departamento e Usuario vinculado a ele', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const cadastroPage = new CadastroPage(page);
+  const paginaLogin = new PaginaLogin(page);
+  const paginaCadastro = new PaginaCadastro(page);
 
   const sufixo = gerarSufixoUnico();
-  const nomeDepartamento = `quality assurance ${sufixo}`;
+  const nomeDepartamento = `garantia de qualidade ${sufixo}`;
   const nomeUsuario = `usuario automacao ${sufixo}`;
   const emailUsuario = `test${sufixo}@automation.com`;
 
-  await loginPage.acessarEAutenticar();
+  await paginaLogin.acessarEAutenticar();
 
-  await cadastroPage.criarDepartamento(nomeDepartamento);
-  await cadastroPage.validarDepartamentoCriado(nomeDepartamento);
+  await paginaCadastro.criarDepartamento(nomeDepartamento);
+  await paginaCadastro.validarDepartamentoCriado(nomeDepartamento);
 
-  await cadastroPage.criarUsuarioComDepartamento(
+  await paginaCadastro.criarUsuarioComDepartamento(
     nomeUsuario,
     emailUsuario,
     process.env.USER_PASSWORD_NIVEL2,
     nomeDepartamento
   );
-  await cadastroPage.validarUsuarioCriado(emailUsuario);
+  await paginaCadastro.validarUsuarioCriado(emailUsuario);
 });

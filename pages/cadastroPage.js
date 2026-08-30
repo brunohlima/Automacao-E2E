@@ -1,6 +1,6 @@
 const { expect } = require('@playwright/test');
 
-class CadastroPage {
+class PaginaCadastro {
   constructor(page) {
     this.page = page;
 
@@ -10,7 +10,7 @@ class CadastroPage {
 
     this.tituloListaDepartamentos = page.getByTestId('departments-list-heading');
     this.botaoAdicionarDepartamento = page.getByTestId('departments-list-button-add');
-    this.inputNomeDepartamento = page.getByTestId('departments-form-input-name');
+    this.campoNomeDepartamento = page.getByTestId('departments-form-input-name');
     this.botaoConfirmarDepartamento = page.getByTestId('departments-form-button-confirm');
     this.filtroNomeDepartamento = page.getByTestId('departments-list-input-filter');
 
@@ -18,14 +18,14 @@ class CadastroPage {
     this.botaoAdicionarUsuario = page.getByTestId('users-list-button-add');
     this.opcaoCriarUsuarioUnico = page.locator('#import-type-single');
     this.botaoContinuarTipoCadastro = page.getByRole('button', { name: 'Continuar' });
-    this.inputNomeUsuario = page.getByTestId('users-form-input-name');
-    this.inputEmailUsuario = page.getByTestId('users-form-input-email');
+    this.campoNomeUsuario = page.getByTestId('users-form-input-name');
+    this.campoEmailUsuario = page.getByTestId('users-form-input-email');
     // Substituir seletores CSS quando a aplicacao expuser data-testid.
-    this.dropdownCargo = page.locator('.p-0.css-n9qnu9').first();
+    this.seletorCargo = page.locator('.p-0.css-n9qnu9').first();
     this.opcaoAdministrador = page.getByText('Administrador');
-    this.dropdownDepartamentoVincular = page.locator('.gap-1.css-14oxtc6 > .p-0').first();
-    this.inputSenhaUsuario = page.getByTestId('users-form-input-password');
-    this.inputConfirmarSenhaUsuario = page.getByTestId('users-form-input-passwordConfirmation');
+    this.seletorDepartamentoVincular = page.locator('.gap-1.css-14oxtc6 > .p-0').first();
+    this.campoSenhaUsuario = page.getByTestId('users-form-input-password');
+    this.campoConfirmarSenhaUsuario = page.getByTestId('users-form-input-passwordConfirmation');
     this.botaoSalvarUsuario = page.getByTestId('users-form-button-save');
     this.filtroUsuario = page.getByTestId('users-list-input-filter');
   }
@@ -36,10 +36,10 @@ class CadastroPage {
     await expect(this.tituloListaDepartamentos).toBeVisible();
 
     await this.botaoAdicionarDepartamento.click();
-    await this.inputNomeDepartamento.fill(nomeDepartamento);
+    await this.campoNomeDepartamento.fill(nomeDepartamento);
     await this.botaoConfirmarDepartamento.click();
 
-    await expect(this.inputNomeDepartamento).toBeHidden();
+    await expect(this.campoNomeDepartamento).toBeHidden();
   }
 
   async validarDepartamentoCriado(nomeDepartamento) {
@@ -61,25 +61,25 @@ class CadastroPage {
     await expect(this.opcaoCriarUsuarioUnico).toHaveAttribute('aria-checked', 'true');
     await this.botaoContinuarTipoCadastro.click();
 
-    await expect(this.inputNomeUsuario).toBeVisible();
+    await expect(this.campoNomeUsuario).toBeVisible();
 
-    await this.inputNomeUsuario.fill(nomeUsuario);
-    await this.inputEmailUsuario.fill(emailUsuario);
+    await this.campoNomeUsuario.fill(nomeUsuario);
+    await this.campoEmailUsuario.fill(emailUsuario);
 
-    await this.dropdownCargo.click();
+    await this.seletorCargo.click();
     await this.opcaoAdministrador.click();
 
-    await this.dropdownDepartamentoVincular.click();
+    await this.seletorDepartamentoVincular.click();
     await this.page.keyboard.type(nomeDepartamento);
     await this.page.getByText(nomeDepartamento, { exact: true }).click();
 
-    await this.inputSenhaUsuario.fill(senhaUsuario);
-    await this.inputConfirmarSenhaUsuario.fill(senhaUsuario);
+    await this.campoSenhaUsuario.fill(senhaUsuario);
+    await this.campoConfirmarSenhaUsuario.fill(senhaUsuario);
 
     // Explicita falhas de complexidade da senha antes do clique.
     await expect(this.botaoSalvarUsuario).toBeEnabled();
     await this.botaoSalvarUsuario.click();
-    await expect(this.inputNomeUsuario).toBeHidden();
+    await expect(this.campoNomeUsuario).toBeHidden();
   }
 
   async validarUsuarioCriado(emailUsuario) {
@@ -91,4 +91,4 @@ class CadastroPage {
 
 }
 
-module.exports = { CadastroPage };
+module.exports = { PaginaCadastro };
