@@ -1,36 +1,36 @@
 const { test } = require('../../support/fixtures');
-const { LoginPage } = require('../../pages/loginPage');
-const { CrudPage } = require('../../pages/crudPage');
+const { PaginaLogin } = require('../../pages/loginPage');
+const { PaginaCrud } = require('../../pages/crudPage');
 const { gerarSufixoUnico } = require('../../support/dadosUnicos');
 
 const PREFIXO_CONEXAO = 'conexao ';
 
 // Preserva a cota de conexoes mesmo quando o teste falha.
 test.afterEach(async ({ page }) => {
-  await new CrudPage(page).limparConexoesSms(PREFIXO_CONEXAO);
+  await new PaginaCrud(page).limparConexoesSms(PREFIXO_CONEXAO);
 });
 
 test('Nivel 3 - Conexao SMS: criar, validar, editar e arquivar', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const crudPage = new CrudPage(page);
+  const paginaLogin = new PaginaLogin(page);
+  const paginaCrud = new PaginaCrud(page);
 
   const sufixo = gerarSufixoUnico();
   const nomeConexao = `conexao ${sufixo}`;
   const nomeConexaoEditada = `conexao editada ${sufixo}`;
 
-  await loginPage.acessarEAutenticar();
-  await crudPage.acessarConexoes();
+  await paginaLogin.acessarEAutenticar();
+  await paginaCrud.acessarConexoes();
 
-  await crudPage.criarConexaoSms(nomeConexao);
-  await crudPage.validarConexaoNaListagem(nomeConexao);
+  await paginaCrud.criarConexaoSms(nomeConexao);
+  await paginaCrud.validarConexaoNaListagem(nomeConexao);
 
-  await crudPage.editarConexaoSms(nomeConexaoEditada);
-  await crudPage.validarConexaoNaListagem(nomeConexaoEditada);
-  await crudPage.validarConexaoRemovida(nomeConexao);
+  await paginaCrud.editarConexaoSms(nomeConexaoEditada);
+  await paginaCrud.validarConexaoNaListagem(nomeConexaoEditada);
+  await paginaCrud.validarConexaoRemovida(nomeConexao);
 
   // Restaura o filtro para que o arquivamento encontre o nome editado.
-  await crudPage.validarConexaoNaListagem(nomeConexaoEditada);
+  await paginaCrud.validarConexaoNaListagem(nomeConexaoEditada);
 
-  await crudPage.arquivarConexaoSms();
-  await crudPage.validarConexaoRemovida(nomeConexaoEditada);
+  await paginaCrud.arquivarConexaoSms();
+  await paginaCrud.validarConexaoRemovida(nomeConexaoEditada);
 });

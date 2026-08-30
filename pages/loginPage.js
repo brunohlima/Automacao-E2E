@@ -1,11 +1,11 @@
 const { expect } = require('@playwright/test');
 
-class LoginPage {
+class PaginaLogin {
   constructor(page) {
     this.page = page;
-    this.emailInput = page.getByTestId('login-input-email');
-    this.passwordInput = page.getByTestId('login-input-password');
-    this.submitButton = page.getByTestId('login-button-submit');
+    this.campoEmail = page.getByTestId('login-input-email');
+    this.campoSenha = page.getByTestId('login-input-password');
+    this.botaoEntrar = page.getByTestId('login-button-submit');
   }
 
   async acessar() {
@@ -13,35 +13,35 @@ class LoginPage {
   }
 
   async realizarLogin(email, senha) {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(senha);
-    await this.submitButton.click();
+    await this.campoEmail.fill(email);
+    await this.campoSenha.fill(senha);
+    await this.botaoEntrar.click();
   }
 
   async acessarEAutenticar() {
     await this.acessar();
     await this.realizarLogin(process.env.EMAIL, process.env.PASSWORD);
-    await expect(this.submitButton).toBeHidden();
+    await expect(this.botaoEntrar).toBeHidden();
   }
 }
 
-class NavigationMenu {
+class MenuNavegacao {
   constructor(page) {
     this.page = page;
-    this.menuGrid = page.locator('.lucide.lucide-layout-grid');
-    this.usersOption = page.getByTestId('menu-button-users');
-    this.departmentsOption = page.getByTestId('menu-button-departments');
+    this.botaoMenuGrade = page.locator('.lucide.lucide-layout-grid');
+    this.opcaoUsuarios = page.getByTestId('menu-button-users');
+    this.opcaoDepartamentos = page.getByTestId('menu-button-departments');
   }
 
   async irParaUsuarios() {
-    await this.menuGrid.click();
-    await this.usersOption.click();
+    await this.botaoMenuGrade.click();
+    await this.opcaoUsuarios.click();
   }
 
   async irParaDepartamentos() {
-    await this.menuGrid.click();
-    await this.departmentsOption.click();
+    await this.botaoMenuGrade.click();
+    await this.opcaoDepartamentos.click();
   }
 }
 
-module.exports = { LoginPage, NavigationMenu };
+module.exports = { PaginaLogin, MenuNavegacao };
