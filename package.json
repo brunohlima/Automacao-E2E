@@ -1,5 +1,5 @@
 {
-  "name": "automacao-e2e-digisac",
+  "name": "automacao-e2e",
   "version": "1.0.0",
   "description": "Projeto de automação de testes E2E com Playwright, simulando fluxos reais de um usuário em uma plataforma web.",
   "main": "index.js",
