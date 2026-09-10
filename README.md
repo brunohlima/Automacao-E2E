@@ -73,7 +73,7 @@ npm -v
 ## Clone o repositório
 
 ```bash
-git clone https://github.com/brunohlima/Automacao-E2E-Digisac
+git clone https://github.com/brunohlima/Automacao-E2E.git
 ```
 
 ## Acesse a pasta do projeto
