@@ -134,23 +134,40 @@ class PaginaCrud {
     await this.acessarConexoes();
     await this.filtroNomeConexao.fill(prefixoNome);
 
-    for (let tentativa = 0; tentativa < 5; tentativa += 1) {
-      await this.botaoAcoesCartao.waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
-      const existeConexao = (await this.botaoAcoesCartao.count()) > 0;
+    const botoesAcoes = this.page.getByTestId('services-list-card-sms-button-dropdown');
 
-      if (!existeConexao) return;
+    for (let tentativa = 0; tentativa < 5; tentativa += 1) {
+      await expect(this.botaoAcoesCartao.or(this.avisoSemResultados)).toBeVisible();
+      if (await this.avisoSemResultados.isVisible()) return;
+
+      const quantidadeAntes = await botoesAcoes.count();
+      const aguardarRemocao = async () => {
+        await expect(this.botaoConfirmarModal).toBeHidden();
+        // O modal pode fechar antes de a listagem receber a atualizacao.
+        await expect.poll(() => botoesAcoes.count(), {
+          timeout: 5000,
+          message: 'A conexao arquivada deve sair da listagem de ativas.',
+        }).toBeLessThan(quantidadeAntes);
+      };
 
       try {
         await this.arquivarConexaoSms();
-        await expect(this.botaoConfirmarModal).toBeHidden();
       } catch (erro) {
-        if (!(erro instanceof ListagemVaziaError)) {
-          console.warn(`[limparConexoesSms] Falha ao arquivar uma conexao, pulando: ${erro.message}`);
-        }
+        // Uma atualizacao concorrente pode remover o card durante a interacao.
+        // So considere a limpeza concluida se a listagem comprovar a remocao.
+        const removida = await aguardarRemocao().then(() => true).catch(() => false);
+        if (removida) continue;
+
+        console.warn(`[limparConexoesSms] Nao foi possivel confirmar o arquivamento de uma conexao: ${erro.message}`);
         break;
       }
 
-      await this.filtroNomeConexao.fill(prefixoNome);
+      try {
+        await aguardarRemocao();
+      } catch (erro) {
+        console.warn(`[limparConexoesSms] Nao foi possivel confirmar a remocao da conexao da listagem: ${erro.message}`);
+        break;
+      }
     }
   }
 
