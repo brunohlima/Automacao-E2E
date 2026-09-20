@@ -228,3 +228,12 @@ Este documento descreve os cenários funcionais e end-to-end utilizados para val
 | Validar ciclo de vida de conexão SMS | CT-003 |
 | Validar atendimento completo do cliente | CT-004 |
 
+## 8. Histórico de execuções
+
+Os cenários deste documento descrevem a cobertura prevista. Os relatórios abaixo registram os resultados de cada bateria, as ocorrências e as limitações da validação.
+
+| Data | Validação | Relatório |
+|---|---|---|
+| 19/09/2026 | Regressão após mudanças de funcionalidades e layout; quatro níveis aprovados e níveis 3 e 4 revalidados após ajuste da limpeza | [Relatório de regressão](RELATORIO-REGRESSAO-2026-09-19.md) |
+
+Para novas execuções, criar um relatório separado com objetivo, ambiente, versão/build quando disponível, casos executados, resultados, ocorrências e referências a evidências revisadas. Não registrar credenciais, URLs privadas ou dados pessoais. Vídeos e capturas devem ter dados sensíveis ocultados antes do compartilhamento.
